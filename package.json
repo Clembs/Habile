@@ -1,0 +1,43 @@
+{
+  "name": "habile-discord",
+  "description": "Assistant Discord bot for the Clembs Server, build for Cloudflare Workers.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": {
+    "name": "Clembs",
+    "email": "clembs@clembs.com",
+    "url": "https://github.com/Clembs"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build": "rollup -c",
+    "preview": "wrangler dev",
+    "publish": "rollup -c && wrangler publish"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^3.18.0",
+    "@purplet/utils": "^1.0.0",
+    "@rollup/plugin-alias": "^4.0.2",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-json": "^5.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@types/dedent": "^0.7.0",
+    "@types/node": "^18.11.8",
+    "dedent": "^0.7.0",
+    "discord-api-types": "^0.37.16",
+    "discord-interactions": "^3.2.0",
+    "dotenv": "^16.0.3",
+    "esbuild": "^0.15.12",
+    "node-fetch": "^3.2.10",
+    "prettier": "^2.7.1",
+    "prettier-plugin-jsdoc": "^0.4.2",
+    "prettier-plugin-organize-imports": "^3.1.1",
+    "rollup": "^3.2.3",
+    "rollup-plugin-esbuild": "^4.10.1",
+    "typescript": "^4.8.4",
+    "wrangler": "^2.1.13"
+  },
+  "dependencies": {}
+}
