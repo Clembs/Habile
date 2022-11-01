@@ -12,7 +12,9 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"]
+      "$lib/*": ["./src/lib/*"],
+      "$core": ["./src/core"],
+      "$core/*": ["./src/core/*"]
     },
     "types": ["@cloudflare/workers-types"]
   },

@@ -1,8 +1,16 @@
-//@ts-check
+// Do not import this file to anywhere else
+// This doesn't run on a Cloudflare Worker, just in Node
+// You just deploy commands using your env variables
 
 import 'dotenv/config';
 import fetch from 'node-fetch';
-import { commands } from './commands.js';
+import { loadHandlers } from './load-handlers';
+
+const { commands: commandHandlers } = loadHandlers();
+
+const commands = Array.from(commandHandlers).map(([_, command]) => ({
+  ...(({ handle, ...data }) => data)(command),
+}));
 
 const token = process.env.DISCORD_TOKEN;
 const applicationId = process.env.APPLICATION_ID;
@@ -11,7 +19,7 @@ const testGuildId = process.env.DISCORD_TEST_GUILD_ID;
 async function registerGuildCommands() {
   const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands`;
   const res = await registerCommands(url);
-  const json = await res.json();
+  const json: any = await res.json();
   console.log(json);
   json.forEach(async (cmd) => {
     const response = await fetch(

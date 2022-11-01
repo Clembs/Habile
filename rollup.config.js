@@ -17,6 +17,7 @@ export default {
     alias({
       entries: {
         $lib: resolve('./src/lib'),
+        $core: resolve('./src/core'),
       },
     }),
     commonjs(),

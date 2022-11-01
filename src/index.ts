@@ -1,7 +1,7 @@
+import { APIResponse, isCommand, isComponent, ShowMessage } from '$core';
+import { loadHandlers } from '$core/load-handlers';
 import { APIInteraction, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
 import { verifyKey } from 'discord-interactions';
-import { commands } from './commands';
-import { APIResponse, isCommand, ShowMessage } from './helpers';
 
 export interface Env {
   PUBLIC_KEY: string;
@@ -28,6 +28,8 @@ export default {
         });
       }
 
+      const { commands, components } = loadHandlers();
+
       if (isCommand(i)) {
         const command = commands.get(i.data.name);
 
@@ -39,6 +41,19 @@ export default {
 
         //@ts-ignore
         return await command.handle.call(i);
+      }
+
+      if (isComponent(i)) {
+        const component = components.get(i.data.custom_id);
+
+        if (!component) {
+          return ShowMessage({
+            content: 'component handler not found',
+          });
+        }
+
+        //@ts-ignore
+        return await component.handle.call(i);
       }
     }
   },

@@ -1,19 +1,13 @@
 import {
+  APIApplicationCommandOption,
   APIChatInputApplicationCommandInteraction,
   APIMessageApplicationCommandInteraction,
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
 } from 'discord-api-types/v10';
-import * as allCommands from './commands/index';
 import { AwaitableResponse } from './helpers';
 
-export const commands = new Map<string, CommandData>(
-  Object.entries(allCommands).map(([_, { command }]) => {
-    return [command.name, command as CommandData];
-  })
-);
-
-type CommandData = SlashCommandData | UserCtxCommandData | MessageCtxCommandData;
+export type CommandData = SlashCommandData | UserCtxCommandData | MessageCtxCommandData;
 
 interface BaseCommandData {
   name: string;
@@ -22,17 +16,19 @@ interface BaseCommandData {
 }
 
 export interface SlashCommandData extends BaseCommandData {
+  description: string;
+  options?: APIApplicationCommandOption[];
   handle: (this: APIChatInputApplicationCommandInteraction) => AwaitableResponse;
   type: ApplicationCommandType.ChatInput;
 }
 
 export interface UserCtxCommandData extends BaseCommandData {
-  handle: (this: APIMessageApplicationCommandInteraction) => AwaitableResponse;
+  handle: (this: APIUserApplicationCommandInteraction) => AwaitableResponse;
   type: ApplicationCommandType.User;
 }
 
 export interface MessageCtxCommandData extends BaseCommandData {
-  handle: (this: APIUserApplicationCommandInteraction) => AwaitableResponse;
+  handle: (this: APIMessageApplicationCommandInteraction) => AwaitableResponse;
   type: ApplicationCommandType.Message;
 }
 

@@ -1,11 +1,13 @@
+import { $slashCommand, ShowMessage } from '$core';
 import { emojis } from '$lib/env';
 import { snowflakeToDate } from '@purplet/utils';
 import dedent from 'dedent';
-import { $slashCommand } from '../commands';
-import { ShowMessage } from '../helpers';
+import { ComponentType } from 'discord-api-types/v10';
+import { RolesButton } from '../components/roles';
 
 export const command = $slashCommand({
   name: 'ping',
+  description: 'A simple ping command.',
   handle() {
     const timestamp = snowflakeToDate(this.id);
 
@@ -21,6 +23,12 @@ export const command = $slashCommand({
       content: dedent`${phrase}
       > **Interaction latency:** ${Date.now() - timestamp.getTime()}ms
       `,
+      components: [
+        {
+          components: [RolesButton.create('1')],
+          type: ComponentType.ActionRow,
+        },
+      ],
     });
   },
 });
