@@ -56,5 +56,8 @@ async function registerCommands(url) {
   return response;
 }
 
-await registerGuildCommands();
-// await registerGlobalCommands();
+if (process.argv.includes('--guild')) {
+  await registerGuildCommands();
+} else {
+  await registerGlobalCommands();
+}

@@ -1,34 +1,39 @@
+import { AwaitableResponse } from '$core';
 import {
   APIApplicationCommandOption,
   APIChatInputApplicationCommandInteraction,
+  APIChatInputApplicationCommandInteractionData,
+  APIMessage,
   APIMessageApplicationCommandInteraction,
+  APIUser,
   APIUserApplicationCommandInteraction,
   ApplicationCommandType,
 } from 'discord-api-types/v10';
-import { AwaitableResponse } from './helpers';
 
 export type CommandData = SlashCommandData | UserCtxCommandData | MessageCtxCommandData;
 
 interface BaseCommandData {
   name: string;
-  handle: (this) => AwaitableResponse;
   type: ApplicationCommandType;
 }
 
 export interface SlashCommandData extends BaseCommandData {
   description: string;
   options?: APIApplicationCommandOption[];
-  handle: (this: APIChatInputApplicationCommandInteraction) => AwaitableResponse;
+  handle: (
+    this: APIChatInputApplicationCommandInteraction,
+    opts: APIChatInputApplicationCommandInteractionData
+  ) => AwaitableResponse;
   type: ApplicationCommandType.ChatInput;
 }
 
 export interface UserCtxCommandData extends BaseCommandData {
-  handle: (this: APIUserApplicationCommandInteraction) => AwaitableResponse;
+  handle: (this: APIUserApplicationCommandInteraction, user: APIUser) => AwaitableResponse;
   type: ApplicationCommandType.User;
 }
 
 export interface MessageCtxCommandData extends BaseCommandData {
-  handle: (this: APIMessageApplicationCommandInteraction) => AwaitableResponse;
+  handle: (this: APIMessageApplicationCommandInteraction, message: APIMessage) => AwaitableResponse;
   type: ApplicationCommandType.Message;
 }
 
