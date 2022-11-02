@@ -1,6 +1,7 @@
 import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+// import exportDirectoryRollup from 'export-directory/dist/rollup';
 import { resolve } from 'path';
 import esbuild from 'rollup-plugin-esbuild';
 
@@ -20,6 +21,7 @@ export default {
         $core: resolve('./src/core'),
       },
     }),
+    // exportDirectoryRollup({}),
     commonjs(),
     nodeResolve({
       browser: true,

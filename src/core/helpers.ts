@@ -1,19 +1,23 @@
 import {
   APIApplicationCommandInteraction,
-  APIBaseSelectMenuComponent,
   APIInteraction,
   APIInteractionResponse,
   APIInteractionResponseCallbackData,
   APIMessageComponentInteraction,
+  APIPartialEmoji,
   ComponentType,
   InteractionResponseType,
   InteractionType,
 } from 'discord-api-types/v10';
-import { SelectMenuData } from './components';
 
 export type AwaitableResponse = Response | Promise<Response>;
 
 export type Typeless<T> = Omit<T, 'type'>;
+
+export interface Env {
+  PUBLIC_KEY: string;
+  DISCORD_TOKEN: string;
+}
 
 export type SelectMenuType =
   | ComponentType.StringSelect
@@ -30,26 +34,52 @@ export function APIResponse(data: APIInteractionResponse) {
   });
 }
 
-export function ShowMessage(data: APIInteractionResponseCallbackData) {
+export function InteractionReply(data: APIInteractionResponseCallbackData) {
   return APIResponse({
     type: InteractionResponseType.ChannelMessageWithSource,
     data,
   });
 }
 
-export function isCommand(data: APIInteraction): data is APIApplicationCommandInteraction {
-  return data.type === InteractionType.ApplicationCommand;
+export function InteractionUpdate(
+  i: APIMessageComponentInteraction,
+  data: APIInteractionResponseCallbackData
+) {
+  return APIResponse({
+    type: InteractionResponseType.UpdateMessage,
+    data,
+  });
+  // getRest().interactionResponse.editOriginalInteractionResponse({
+  //   interactionToken: i.token,
+  //   applicationId: i.application_id,
+  //   body: data,
+  // });
 }
 
-export function isComponent(data: APIInteraction): data is APIMessageComponentInteraction {
-  return data.type === InteractionType.MessageComponent;
+export function isCommand(i: APIInteraction): i is APIApplicationCommandInteraction {
+  return i.type === InteractionType.ApplicationCommand;
 }
 
-export function selectMenuComponent<T extends SelectMenuType>(
-  data: SelectMenuData
-): APIBaseSelectMenuComponent<T> {
-  const wouthandle = (({ handle, ...h }) => h)(data);
+export function isComponent(i: APIInteraction): i is APIMessageComponentInteraction {
+  return i.type === InteractionType.MessageComponent;
+}
+
+export function resolveCustomIdData(customId: string) {
+  const withoutKey = customId.split('_').at(-1);
+  try {
+    return JSON.parse(withoutKey);
+  } catch (e) {
+    return withoutKey;
+  }
+}
+
+export function getEmojiObject(emoji: string): APIPartialEmoji {
+  const [animated, name, id] = emoji.replaceAll(/[<|>]/g, '').split(':');
+
   return {
-    ...wouthandle,
+    id,
+    name,
+    // ...(animated === 'a' ? { animated: true } : {}),
+    animated: animated === 'a',
   };
 }

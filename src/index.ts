@@ -1,11 +1,26 @@
-import { APIResponse, isCommand, isComponent, ShowMessage } from '$core';
-import { loadHandlers } from '$core/load-handlers';
-import { APIInteraction, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
+import {
+  APIResponse,
+  Env,
+  getRest,
+  InteractionReply,
+  isCommand,
+  isComponent,
+  loadHandlers,
+  resolveCustomIdData,
+  SlashCommandData,
+} from '$core';
+import {
+  isChatInputApplicationCommandInteraction,
+  isContextMenuApplicationCommandInteraction,
+} from 'discord-api-types/utils/v10';
+import {
+  APIInteraction,
+  ApplicationCommandType,
+  InteractionResponseType,
+  InteractionType,
+  MessageFlags,
+} from 'discord-api-types/v10';
 import { verifyKey } from 'discord-interactions';
-
-export interface Env {
-  PUBLIC_KEY: string;
-}
 
 export default {
   async fetch(request: Request, env: Env) {
@@ -28,32 +43,56 @@ export default {
         });
       }
 
+      getRest(env);
+
       const { commands, components } = loadHandlers();
+
+      console.log(components);
+
+      let response;
 
       if (isCommand(i)) {
         const command = commands.get(i.data.name);
 
         if (!command) {
-          return ShowMessage({
-            content: 'command handler not found',
+          return InteractionReply({
+            content: 'Command handler not found',
+            flags: MessageFlags.Ephemeral,
           });
         }
 
-        //@ts-ignore
-        return await command.handle.call(i);
+        if (isChatInputApplicationCommandInteraction(i)) {
+          response = await (command as SlashCommandData).handle.call(i, i.data);
+        } else if (isContextMenuApplicationCommandInteraction(i)) {
+          response = await (command as any).handle.call(
+            i,
+            i.data.type === ApplicationCommandType.Message ? i.message : i.user
+          );
+        }
       }
 
       if (isComponent(i)) {
-        const component = components.get(i.data.custom_id);
+        const customId = i.data.custom_id.split('_').slice(0, -1).join('_');
+
+        const component = components.get(customId);
+
+        const data = resolveCustomIdData(i.data.custom_id);
 
         if (!component) {
-          return ShowMessage({
+          return InteractionReply({
             content: 'component handler not found',
+            flags: MessageFlags.Ephemeral,
           });
         }
 
         //@ts-ignore
-        return await component.handle.call(i);
+        response = await component.handle.call(i, data);
+      }
+
+      if (response instanceof Response) {
+        return response;
+      } else {
+        return new Response('ok');
       }
     }
   },
