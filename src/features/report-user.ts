@@ -1,9 +1,9 @@
-import { $userContextCommand, ShowMessage } from '$core';
+import { $userContextCommand, InteractionReply } from '$core';
 
 export const command = $userContextCommand({
   name: 'Report User',
   handle() {
-    return ShowMessage({
+    return InteractionReply({
       content: 'hi',
     });
   },
