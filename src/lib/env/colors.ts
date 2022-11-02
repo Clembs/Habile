@@ -4,7 +4,7 @@ export default {
   error: 16741492,
   // error: 16722474,
 
-  default: 15888775,
+  default: 9994239,
   sync: 0,
 
   lightred: 15888775,
