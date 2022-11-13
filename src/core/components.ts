@@ -60,10 +60,14 @@ function generateCustomId(props?: any) {
   return id;
 }
 
-function $component<P extends any, T extends APIMessageComponent>(data: ComponentData<P>) {
+function $component<P extends any, T extends APIMessageComponent>(
+  data: ComponentData<P>
+): ComponentData<P> & {
+  create(templateProps?: P): T;
+} {
   return {
     ...data,
-    create(templateProps?: P): T {
+    create(templateProps): T {
       const temp = data.template?.(templateProps) ?? {};
       // @ts-ignore
       return {

@@ -1,19 +1,19 @@
-import { $button, $selectMenu, getRest, InteractionUpdate } from '$core';
-import { colors, roles } from '$lib/env';
+import { $button, $selectMenu, getEmojiObject, getRest, InteractionUpdate } from '$core';
+import { colors, emojis, roles } from '$lib/env';
 import {
   APIInteractionResponseCallbackData,
   APIMessageComponentInteraction,
-  APIRole,
   ButtonStyle,
   ComponentType,
   MessageFlags,
 } from 'discord-api-types/v10';
+import { rolesMenu } from '../menus/roles';
 
 export const RolesButton = $button({
   customId: 'roles',
   template(roleType: keyof typeof roles) {
     return {
-      style: ButtonStyle.Primary,
+      style: ButtonStyle.Secondary,
       label: roles[roleType].title,
       emoji: {
         name: roles[roleType].emoji,
@@ -21,33 +21,25 @@ export const RolesButton = $button({
     };
   },
   async handle(roleType) {
-    const guildRoles = await getRest().guild.getGuildRoles({
-      guildId: this.guild_id,
-      body: null,
-    });
-
-    return InteractionUpdate(this, await renderRoleMenu(this, guildRoles, roleType));
+    return InteractionUpdate(this, await renderRoleMenu(this, roleType));
   },
 });
 
-async function renderRoleMenu(
-  i: APIMessageComponentInteraction,
-  guildRoles: APIRole[],
-  type: keyof typeof roles
-) {
-  const filteredRoles = guildRoles
-    .filter((r) => roles[type].roles.includes(r.id))
-    .map(({ id, name }) => ({ id, name }));
-
-  const selectMenu = RoleSelect.create({
-    t: type,
-    guildRoles: filteredRoles,
-  });
+async function renderRoleMenu(i: APIMessageComponentInteraction, type: keyof typeof roles) {
+  const selectMenu = RoleSelect.create(type);
+  const rolePicker = roles[type];
+  // TODO: this
+  // const color = roles.colors.roles.find((color) =>
+  //   type === 'colors' && i.data.component_type === ComponentType.StringSelect
+  //     ? color.id === i.data.values[0]
+  //     : i.member.roles.find((rId) => rId === color.id)
+  // );
 
   return {
     embeds: [
       {
-        title: 'Select roles to pick',
+        title: `${rolePicker.emoji} ${rolePicker.title}`,
+        description: roles[type].description,
         color: colors.default,
       },
     ],
@@ -59,8 +51,23 @@ async function renderRoleMenu(
             ...selectMenu,
             options: selectMenu.options.map((v) => ({
               ...v,
-              default: i.member.roles.includes(v.value),
+              default:
+                (!i.member.roles.includes(v.value) &&
+                  i.data.component_type === ComponentType.StringSelect &&
+                  i.data.values.includes(v.value)) ||
+                i.member.roles.includes(v.value),
             })),
+          },
+        ],
+      },
+      {
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            ...rolesMenu.create(),
+            label: 'Back',
+            style: ButtonStyle.Secondary,
+            emoji: getEmojiObject(emojis.buttons.back),
           },
         ],
       },
@@ -72,39 +79,45 @@ async function renderRoleMenu(
 export const RoleSelect = $selectMenu({
   customId: 'role_select',
   type: ComponentType.StringSelect,
-  template({
-    t,
-    guildRoles,
-  }: {
-    t: keyof typeof roles;
-    guildRoles: { id: string; name: string }[];
-  }) {
+  template(t: keyof typeof roles) {
     return {
-      max_values: t === 'colors' ? 1 : guildRoles.length,
-      options: guildRoles.map((role) => ({
+      min_values: 0,
+      max_values: t === 'colors' ? 1 : roles[t].roles.length,
+      options: roles[t].roles.map((role) => ({
         label: role.name,
         value: role.id,
+        ...(role.description ? { description: role.description } : {}),
+        ...(role.emoji ? { emoji: getEmojiObject(role.emoji) } : {}),
       })),
     };
   },
-  async handle(r) {
-    const guildRoles = await getRest().guild.getGuildRoles({
-      guildId: this.guild_id,
-      body: null,
+  async handle(roleType) {
+    const pending: Promise<any>[] = [];
+
+    roles[roleType].roles.forEach(async ({ id: roleId }) => {
+      if (this.member.roles.includes(roleId) && !this.data.values.includes(roleId)) {
+        pending.push(
+          getRest().guild.removeGuildMemberRole({
+            guildId: this.guild_id,
+            roleId: roleId,
+            userId: this.member.user.id,
+          } as any)
+        );
+      }
+
+      if (this.data.values.includes(roleId) && !this.member.roles.includes(roleId)) {
+        pending.push(
+          getRest().guild.addGuildMemberRole({
+            guildId: this.guild_id,
+            roleId: roleId,
+            userId: this.member.user.id,
+          } as any)
+        );
+      }
     });
 
-    console.log(r);
-
-    this.data.values.forEach(async (role) => {
-      const h = await getRest().guild.addGuildMemberRole({
-        guildId: this.guild_id,
-        roleId: role,
-        userId: this.user.id,
-      } as any);
-
-      console.log(h);
-    });
-
-    return InteractionUpdate(this, await renderRoleMenu(this, guildRoles, r.t));
+    return Promise.all(pending).then(async () =>
+      InteractionUpdate(this, await renderRoleMenu(this, roleType))
+    );
   },
 });

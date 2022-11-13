@@ -1,5 +1,6 @@
 import { $button, getRest, InteractionReply } from '$core';
-import { colors } from '$lib/env';
+import { colors, emojis } from '$lib/env';
+import { createLinkButton } from '@purplet/utils';
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { rolesMenu } from './menus/roles';
 
@@ -12,30 +13,36 @@ export default $button({
       body: {
         embeds: [
           {
-            title: 'Welcome to the Clembs Server!',
+            color: colors.default,
+            image: {
+              url: 'https://cdn.discordapp.com/attachments/1037085832198230147/1041051749735207022/image.png',
+            },
+          },
+          {
+            title: `${emojis.clembs}  Clembs Server - Rules`,
             description:
-              "Please read the rules carefully, they're not long and can prevent you from being striked in advance.",
+              "Please read the rules carefully, they're not long and can prevent you from being striked in advance.\n\nYou can use the buttons below to customize your experience, so send us feedback!",
             color: colors.default,
             fields: [
               {
                 name: 'Be respectful',
                 value:
-                  "• Use common sense, don't purposefully offend anyone, etc.\n• Use constructive criticism as much as you can. Pure hatred for a person or what they do is simply rude and mean.\n• Just like any server, you need to comply to the **[Discord Terms of Service](https://dis.gd/tos)**.",
+                  "Use common sense, constructive criticism, and don't purposefully offend anyone or any group. Just like any server, you will need to comply to the **[Discord Terms of Service](https://dis.gd/tos)**.",
               },
               {
                 name: "Things you shouldn't send",
                 value:
-                  '• Limit chains & "screenshot this" memes (or similar) to threads.\n• **Do not** share, encourage, discuss piracy, illegal software (hacks, unauthorized client mods) or malware. You\'ve be warned, and are subject to heavier sanctions',
+                  "Limit chains, long images, repeatition-based memes **to threads**.\n**Do not** share, encourage, discuss piracy, illegal software (hacks, unauthorized client mods) or malware. You've be warned, and are subject to heavier sanctions.",
               },
               {
                 name: 'Keep the server friendly & safe',
                 value:
-                  'Maintain dark humor, inappropriate jokes, slurs, mentions of NSFW things and everything that can fall in this to a strict minimum. \n:warning: This server should be friendly to teens 13 and older.',
+                  'Maintain inappropriate jokes/humor, slurs, NSFW topics and everything in-between to a strict minimum. **This server should be friendly to teens 13 and older.**',
               },
               {
                 name: 'Sanctions',
                 value:
-                  '• If you accidentally slip or forget about these rules, a simple warn will be added to your Moderation history (which you can view with </modlogs user:988494582981484585>), nothing more.\n• Now, if you repeatedly break rules, sanctions can range from a timeout to a full permanent ban and will depend on your case.',
+                  'If you accidentally slip, a warn will be added to your Moderation history (</modlogs user:988494582981484585>), nothing more. If you repeatedly break the rules, sanctions can go from a timeout to a permanent ban, depending on your case.',
               },
             ],
           },
@@ -50,15 +57,27 @@ export default $button({
                 style: ButtonStyle.Secondary,
                 label: 'Send Feedback',
                 custom_id: 'menu_feedback',
+                disabled: true,
                 emoji: {
                   name: '💡',
                 },
               },
             ],
           },
+          {
+            type: ComponentType.ActionRow,
+            components: [
+              createLinkButton('Website', 'https://clembs.com'),
+              createLinkButton('Twitch', 'https://twitch.tv/clembs'),
+              {
+                ...createLinkButton('Donate', 'https://ko-fi.com/clembs'),
+                disabled: true,
+              },
+            ],
+          },
         ],
       },
-      channelId: '1037103610137419866',
+      channelId: '738747677084483624',
     });
 
     return InteractionReply({});

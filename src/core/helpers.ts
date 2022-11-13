@@ -1,3 +1,4 @@
+import { CustomEmojiRegex } from '@purplet/utils';
 import {
   APIApplicationCommandInteraction,
   APIInteraction,
@@ -73,7 +74,13 @@ export function resolveCustomIdData(customId: string) {
   }
 }
 
-export function getEmojiObject(emoji: string): APIPartialEmoji {
+export function getEmojiObject(emoji: string): Partial<APIPartialEmoji> {
+  if (!emoji.match(CustomEmojiRegex)) {
+    return {
+      name: emoji,
+    };
+  }
+
   const [animated, name, id] = emoji.replaceAll(/[<|>]/g, '').split(':');
 
   return {

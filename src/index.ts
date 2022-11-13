@@ -72,9 +72,13 @@ export default {
       }
 
       if (isComponent(i)) {
-        const customId = i.data.custom_id.split('_').slice(0, -1).join('_');
+        const customId = i.data.custom_id.includes('_')
+          ? i.data.custom_id.split('_').slice(0, -1).join('_')
+          : i.data.custom_id;
 
-        const component = components.get(customId);
+        const component = Array.from(components.values()).find((c) =>
+          i.data.custom_id.startsWith(c.customId)
+        );
 
         const data = resolveCustomIdData(i.data.custom_id);
 

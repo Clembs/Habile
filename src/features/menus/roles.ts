@@ -1,4 +1,4 @@
-import { $button, getEmojiObject, InteractionReply } from '$core';
+import { $button, getEmojiObject, InteractionReply, InteractionUpdate } from '$core';
 import { colors, emojis } from '$lib/env';
 import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
 import { RolesButton } from '../roles/handlers';
@@ -8,16 +8,17 @@ export const rolesMenu = $button({
   template() {
     return {
       style: ButtonStyle.Primary,
-      label: 'Roles',
+      label: 'Customize your roles',
       emoji: getEmojiObject(emojis.buttons.pencil),
     };
   },
   handle() {
-    return InteractionReply({
+    const message = {
       embeds: [
         {
-          title: `${emojis.buttons.pencil} Customize your Clembs Server experience!`,
-          description: 'Click a button below to add or remove your different roles!',
+          title: `✏️ Customize your server roles`,
+          description:
+            'In order to make your experience tailored to your needs, while looking unique, you can make use of the categories below to add or remove roles.',
           color: colors.default,
         },
       ],
@@ -32,6 +33,12 @@ export const rolesMenu = $button({
         },
       ],
       flags: MessageFlags.Ephemeral,
-    });
+    };
+
+    if (this.message.flags << MessageFlags.Ephemeral) {
+      return InteractionUpdate(this, message);
+    } else {
+      return InteractionReply(message);
+    }
   },
 });

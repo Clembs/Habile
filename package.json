@@ -20,7 +20,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^3.18.0",
     "@paperdave/utils": "^1.5.0",
-    "@purplet/polyfill": "^1.2.0",
+    "@purplet/polyfill": "^1.2.1",
     "@purplet/rest": "^1.2.0",
     "@purplet/serialize": "^2.0.0",
     "@purplet/utils": "^1.0.0",

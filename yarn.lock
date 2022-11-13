@@ -224,10 +224,10 @@
   dependencies:
     utility-types "^3.10.0"
 
-"@purplet/polyfill@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@purplet/polyfill/-/polyfill-1.2.0.tgz#b83285f5fd40cd54556baf8b3c8354305f0c1bdb"
-  integrity sha512-LlGJOUP0OS3Zkc4ymm/KXsm8fkCUuHOufWWJvhnJZ/WJuut6gXGiAqjtegyp7+xaK6Hq/Or7IHLv/yl8X8xhgQ==
+"@purplet/polyfill@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@purplet/polyfill/-/polyfill-1.2.1.tgz#74961d9a2705fb73b3ab08d37cd43f63249a3c22"
+  integrity sha512-JgV8cTuMV4aCrihwM7NbqKjYj7NWalfsCyiD75XxyIRnTVKyq6Y+GGyfwGH7QXJyiLSW9LSuCVnHQoFxCdiYig==
   dependencies:
     "@ungap/structured-clone" "^1.0.1"
     dotenv "^16.0.1"
