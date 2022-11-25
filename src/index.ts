@@ -1,8 +1,10 @@
 import {
   APIResponse,
   Env,
+  getEnv,
   getRest,
   InteractionReply,
+  isAutocomplete,
   isCommand,
   isComponent,
   loadHandlers,
@@ -44,8 +46,9 @@ export default {
       }
 
       getRest(env);
+      getEnv(env);
 
-      const { commands, components } = loadHandlers();
+      const { commands, components, autocompletes } = loadHandlers();
 
       console.log(components);
 
@@ -64,7 +67,8 @@ export default {
         if (isChatInputApplicationCommandInteraction(i)) {
           response = await (command as SlashCommandData).handle.call(i, i.data);
         } else if (isContextMenuApplicationCommandInteraction(i)) {
-          response = await (command as any).handle.call(
+          // @ts-ignore
+          response = await command.handle.call(
             i,
             i.data.type === ApplicationCommandType.Message ? i.message : i.user
           );
@@ -72,10 +76,6 @@ export default {
       }
 
       if (isComponent(i)) {
-        const customId = i.data.custom_id.includes('_')
-          ? i.data.custom_id.split('_').slice(0, -1).join('_')
-          : i.data.custom_id;
-
         const component = Array.from(components.values()).find((c) =>
           i.data.custom_id.startsWith(c.customId)
         );
@@ -89,8 +89,20 @@ export default {
           });
         }
 
-        //@ts-ignore
+        // @ts-ignore
         response = await component.handle.call(i, data);
+      }
+
+      if (isAutocomplete(i)) {
+        const autocomplete = Array.from(autocompletes.values()).find(
+          ({ commandName }) =>
+            i.data.name === commandName && i.data.options.find((o) => 'focused' in o && o.focused)
+        );
+
+        response = APIResponse({
+          type: InteractionResponseType.ApplicationCommandAutocompleteResult,
+          data: await autocomplete.handle.call(i),
+        });
       }
 
       if (response instanceof Response) {
