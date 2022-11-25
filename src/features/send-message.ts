@@ -1,7 +1,8 @@
 import { $button, getRest, InteractionReply } from '$core';
 import { colors, emojis } from '$lib/env';
 import { createLinkButton } from '@purplet/utils';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import { ComponentType } from 'discord-api-types/v10';
+import { feedbackMenu } from './menus/feedback';
 import { rolesMenu } from './menus/roles';
 
 export default $button({
@@ -21,7 +22,7 @@ export default $button({
           {
             title: `${emojis.clembs}  Clembs Server - Rules`,
             description:
-              "Please read the rules carefully, they're not long and can prevent you from being striked in advance.\n\nYou can use the buttons below to customize your experience, so send us feedback!",
+              "Please read the rules carefully, they're not long and can prevent you from being striked in advance.\n\nYou can use the buttons below to customize your experience and send us feedback!",
             color: colors.default,
             fields: [
               {
@@ -50,19 +51,7 @@ export default $button({
         components: [
           {
             type: ComponentType.ActionRow,
-            components: [
-              rolesMenu.create(),
-              {
-                type: ComponentType.Button,
-                style: ButtonStyle.Secondary,
-                label: 'Send Feedback',
-                custom_id: 'menu_feedback',
-                disabled: true,
-                emoji: {
-                  name: '💡',
-                },
-              },
-            ],
+            components: [rolesMenu.create(), feedbackMenu.create()],
           },
           {
             type: ComponentType.ActionRow,
@@ -77,7 +66,7 @@ export default $button({
           },
         ],
       },
-      channelId: '738747677084483624',
+      channelId: '1037103610137419866' ?? '738747677084483624',
     });
 
     return InteractionReply({});

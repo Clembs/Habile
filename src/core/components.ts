@@ -7,17 +7,19 @@ import {
   APIMessageComponent,
   APIMessageComponentButtonInteraction,
   APIMessageComponentSelectMenuInteraction,
+  APIModalInteractionResponseCallbackData,
+  APIModalSubmitInteraction,
   APIStringSelectComponent,
   ComponentType,
 } from 'discord-api-types/v10';
 
-export type ComponentData<P> = ButtonData<P> | SelectMenuData<P, SelectMenuType>;
+export type ComponentData<P> = ButtonData<P> | SelectMenuData<P, SelectMenuType> | ModalData<P>;
 
 interface BaseComponentData<P extends any> {
   customId: string;
   template?: (props?: P) => Typeless<APIMessageComponent>;
   handle: (this, props?: P) => Awaitable<void | Response>;
-  type: ComponentType;
+  type: ComponentType | 0;
 }
 
 export interface ButtonData<P> extends BaseComponentData<P> {
@@ -43,6 +45,12 @@ export interface SelectMenuData<P, T extends SelectMenuType> extends BaseCompone
   type: T;
 }
 
+export interface ModalData<P> extends BaseComponentData<P> {
+  template?: (props?: P) => Typeless<Omit<APIModalInteractionResponseCallbackData, 'custom_id'>>;
+  handle: (this: APIModalSubmitInteraction, props?: P) => Awaitable<void | Response>;
+  type: 0;
+}
+
 function generateCustomId(props?: any) {
   let id = '';
   const j =
@@ -60,7 +68,10 @@ function generateCustomId(props?: any) {
   return id;
 }
 
-function $component<P extends any, T extends APIMessageComponent>(
+function $component<
+  P extends any,
+  T extends APIMessageComponent | APIModalInteractionResponseCallbackData
+>(
   data: ComponentData<P>
 ): ComponentData<P> & {
   create(templateProps?: P): T;
@@ -90,4 +101,8 @@ export function $selectMenu<P, T extends SelectMenuType>(data: SelectMenuData<P,
     P,
     T extends ComponentType.StringSelect ? APIStringSelectComponent : APIBaseSelectMenuComponent<T>
   >(data);
+}
+
+export function $modal<P>(data: Typeless<ModalData<P>>) {
+  return $component<P, APIModalInteractionResponseCallbackData>({ ...data, type: 0 });
 }

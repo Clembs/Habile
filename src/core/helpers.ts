@@ -1,10 +1,12 @@
 import { CustomEmojiRegex } from '@purplet/utils';
 import {
+  APIApplicationCommandAutocompleteInteraction,
   APIApplicationCommandInteraction,
   APIInteraction,
   APIInteractionResponse,
   APIInteractionResponseCallbackData,
   APIMessageComponentInteraction,
+  APIModalInteractionResponseCallbackData,
   APIPartialEmoji,
   ComponentType,
   InteractionResponseType,
@@ -18,6 +20,18 @@ export type Typeless<T> = Omit<T, 'type'>;
 export interface Env {
   PUBLIC_KEY: string;
   DISCORD_TOKEN: string;
+  APPLICATION_ID: string;
+  DISCORD_TEST_GUILD_ID: string;
+  BACKBLAZE_TOKEN: string;
+  BACKBLAZE_BUCKET_ID: string;
+}
+
+let globalEnv: Env;
+export function getEnv(env?: Env) {
+  if (env) {
+    globalEnv = env;
+  }
+  return globalEnv;
 }
 
 export type SelectMenuType =
@@ -42,6 +56,13 @@ export function InteractionReply(data: APIInteractionResponseCallbackData) {
   });
 }
 
+export function ShowModal(data: APIModalInteractionResponseCallbackData) {
+  return APIResponse({
+    type: InteractionResponseType.Modal,
+    data,
+  });
+}
+
 export function InteractionUpdate(
   i: APIMessageComponentInteraction,
   data: APIInteractionResponseCallbackData
@@ -62,7 +83,13 @@ export function isCommand(i: APIInteraction): i is APIApplicationCommandInteract
 }
 
 export function isComponent(i: APIInteraction): i is APIMessageComponentInteraction {
-  return i.type === InteractionType.MessageComponent;
+  return i.type === InteractionType.MessageComponent || i.type === InteractionType.ModalSubmit;
+}
+
+export function isAutocomplete(
+  i: APIInteraction
+): i is APIApplicationCommandAutocompleteInteraction {
+  return i.type === InteractionType.ApplicationCommandAutocomplete;
 }
 
 export function resolveCustomIdData(customId: string) {

@@ -35,7 +35,7 @@ export const rolesMenu = $button({
       flags: MessageFlags.Ephemeral,
     };
 
-    if (this.message.flags << MessageFlags.Ephemeral) {
+    if ((this.message.flags & MessageFlags.Ephemeral) === MessageFlags.Ephemeral) {
       return InteractionUpdate(this, message);
     } else {
       return InteractionReply(message);
