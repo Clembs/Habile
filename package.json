@@ -15,7 +15,7 @@
     "dev": "yarn commands --guild && rollup -c --watch",
     "build": "rollup -c",
     "preview": "wrangler dev",
-    "publish": "yarn commands && rollup -c && wrangler publish"
+    "deploy": "yarn commands && rollup -c && wrangler publish"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.18.0",

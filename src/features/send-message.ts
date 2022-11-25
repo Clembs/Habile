@@ -66,7 +66,9 @@ export default $button({
           },
         ],
       },
-      channelId: '1037103610137419866' ?? '738747677084483624',
+      channelId:
+        // '1037103610137419866' ??
+        '738747677084483624',
     });
 
     return InteractionReply({});
