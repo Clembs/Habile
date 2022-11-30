@@ -16,9 +16,26 @@ const token = process.env.DISCORD_TOKEN;
 const applicationId = process.env.APPLICATION_ID;
 const testGuildId = process.env.DISCORD_TEST_GUILD_ID;
 
-async function registerGuildCommands() {
+async function registerCommands() {
   const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands`;
-  const res = await registerCommands(url);
+
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bot ${token}`,
+    },
+    method: 'PUT',
+    body: JSON.stringify(commands),
+  });
+
+  if (res.ok) {
+    console.log('Registered all commands');
+  } else {
+    console.error('Error registering commands');
+    const text = await res.text();
+    console.error(text);
+  }
+
   const json: any = await res.json();
   console.log(json);
   json.forEach(async (cmd) => {
@@ -31,33 +48,4 @@ async function registerGuildCommands() {
   });
 }
 
-async function registerGlobalCommands() {
-  const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
-  await registerCommands(url);
-}
-
-async function registerCommands(url) {
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bot ${token}`,
-    },
-    method: 'PUT',
-    body: JSON.stringify(commands),
-  });
-
-  if (response.ok) {
-    console.log('Registered all commands');
-  } else {
-    console.error('Error registering commands');
-    const text = await response.text();
-    console.error(text);
-  }
-  return response;
-}
-
-if (process.argv.includes('--guild')) {
-  await registerGuildCommands();
-} else {
-  await registerGlobalCommands();
-}
+await registerCommands();

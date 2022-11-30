@@ -1,5 +1,5 @@
 import { $button, $selectMenu, getEmojiObject, getRest, InteractionUpdate } from '$core';
-import { colors, emojis, roles } from '$lib/env';
+import { colors, roles } from '$lib/env';
 import {
   APIInteractionResponseCallbackData,
   APIMessageComponentInteraction,
@@ -7,21 +7,24 @@ import {
   ComponentType,
   MessageFlags,
 } from 'discord-api-types/v10';
-import { rolesMenu } from '../menus/roles';
+import { renderNavbar } from '../menus/roles';
 
 export const RolesButton = $button({
   customId: 'roles',
   template(roleType: keyof typeof roles) {
     return {
       style: ButtonStyle.Secondary,
-      label: roles[roleType].title,
-      emoji: {
-        name: roles[roleType].emoji,
-      },
+      label: roles[roleType].label,
+      // emoji: {
+      //   name: roles[roleType].emoji,
+      // },
     };
   },
   async handle(roleType) {
-    return InteractionUpdate(this, await renderRoleMenu(this, roleType));
+    const res = await renderRoleMenu(this, roleType);
+
+    console.log(JSON.stringify(res));
+    return InteractionUpdate(this, res);
   },
 });
 
@@ -60,17 +63,7 @@ async function renderRoleMenu(i: APIMessageComponentInteraction, type: keyof typ
           },
         ],
       },
-      {
-        type: ComponentType.ActionRow,
-        components: [
-          {
-            ...rolesMenu.create(),
-            label: 'Back',
-            style: ButtonStyle.Secondary,
-            emoji: getEmojiObject(emojis.buttons.back),
-          },
-        ],
-      },
+      renderNavbar(type),
     ],
     flags: MessageFlags.Ephemeral,
   } as APIInteractionResponseCallbackData;

@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "scripts": {
     "commands": "esbuild src/core/register-commands.ts --bundle --outfile=dist/commands.js --format=esm --external:dotenv --platform=node && node dist/commands",
-    "dev": "yarn commands --guild && rollup -c --watch",
+    "dev": "yarn commands && rollup -c --watch",
     "build": "rollup -c",
     "preview": "wrangler dev",
     "deploy": "yarn commands && rollup -c && wrangler publish"

@@ -1,37 +1,8 @@
+import emojis from './emojis';
+
 export const roles = {
-  notifications: {
-    title: 'Notification roles',
-    description:
-      "I do a variety of things, you may not care about all of them, or forget some events or streams I hold. So, get pinged for stuff **you** care about, because @everyone pings are overrated. (you'll still get them when something REALLY cool and worth the ping is on the horizon, tho).",
-    emoji: '🔔',
-    roles: [
-      {
-        id: '1013041376092495942',
-        name: 'New Content',
-        description: 'Brand new content and original creations.',
-        emoji: '🆕',
-      },
-      {
-        id: '1013041603427966996',
-        name: 'Updates & Events',
-        description: 'When a server event is scheduled, or when major updates happen.',
-        emoji: '🔔',
-      },
-      {
-        id: '1013041680439582801',
-        name: 'Streams',
-        description: 'I sometimes stream out of schedule. Select this to know when I do.',
-        emoji: '📺',
-      },
-      // {
-      //   id:
-      //   '1035582884691595384',
-      //   name: 'Creative Awards',
-      //   description: ''
-      // }
-    ],
-  },
   colors: {
+    label: 'Color',
     title: 'Customize name color',
     description:
       "Using the dropdown menu below, you can change your server nickname's color to whatever you like! This will be reflected in messages, the members list, and in many other places within the server.",
@@ -52,22 +23,61 @@ export const roles = {
       name,
       id,
       description: '',
-      emoji: '',
+      emoji: emojis.colors?.[name.toLowerCase().replace(' ', '_')],
       color: parseInt(color, 16),
     })),
   },
+  notifications: {
+    label: 'Notifications',
+    title: 'Notification roles',
+    description:
+      "I do a variety of things, and you may not care about all of it, or forget some events or streams I host. So, get pinged for stuff **you** care about, because @everyone pings are overrated. (you'll still get them when something REALLY cool and worth the ping is on the horizon, tho).",
+    emoji: '🔔',
+    roles: [
+      {
+        id: '1013041376092495942',
+        name: 'New Content',
+        description: 'New and original Clembs creations.',
+        emoji: '🆕',
+      },
+      {
+        id: '1013041603427966996',
+        name: 'Updates & Events',
+        description: 'When a new event is scheduled or major updates happen.',
+        emoji: '🔔',
+      },
+      {
+        id: '1013041680439582801',
+        name: 'Streams',
+        description: 'Know when I stream out of schedule.',
+        emoji: '📺',
+      },
+      {
+        id: '1035582884691595384',
+        name: 'Creative Awards',
+        description: 'Be aware of #creative-awards announcements.',
+        emoji: '🎨',
+      },
+    ],
+  },
   access: {
+    label: 'More',
     title: 'Access more channels',
     description:
-      "The server at its core is aiming for minimalism, which is why you don't see a lot of the hidden channels. Below is some roles to expand what you have access to. Some other channels are still kept private and require manual verification, like the #borderline channel.",
+      "The server at its core is aiming for minimalism, which is why you don't see a lot of the hidden channels. Below is some roles to expand what you have access to.\nSome other channels are still kept private and require manual verification, like the #borderline channel.",
     emoji: '🔓',
     roles: [
       {
         id: '1021801774757195808',
-        name: 'Minecraft Survival Multiplayer Access',
-        description:
-          'Grants access to the semi-private Clembs Minecraft server, to launch on the winter holiday!',
+        name: 'Clembs SMP Early Access',
+        description: 'Enter the Clembs SMP Minecraft server, next holiday!',
         emoji: '⛏️',
+      },
+      {
+        id: '1023546680454430721',
+        name: 'Join the Hydranation SMP clan! #ad',
+        description: 'We descend from newts to revive our glory on this world!',
+        // emoji: emojis.colors.azure,
       },
     ],
   },

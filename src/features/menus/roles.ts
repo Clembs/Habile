@@ -1,5 +1,5 @@
 import { $button, getEmojiObject, InteractionReply, InteractionUpdate } from '$core';
-import { colors, emojis } from '$lib/env';
+import { colors, emojis, roles } from '$lib/env';
 import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
 import { RolesButton } from '../roles/handlers';
 
@@ -22,16 +22,7 @@ export const rolesMenu = $button({
           color: colors.default,
         },
       ],
-      components: [
-        {
-          components: [
-            RolesButton.create('colors'),
-            RolesButton.create('notifications'),
-            RolesButton.create('access'),
-          ],
-          type: ComponentType.ActionRow,
-        },
-      ],
+      components: [renderNavbar()],
       flags: MessageFlags.Ephemeral,
     };
 
@@ -42,3 +33,25 @@ export const rolesMenu = $button({
     }
   },
 });
+
+export function renderNavbar(activeTab?: keyof typeof roles) {
+  return {
+    type: ComponentType.ActionRow,
+    components: [
+      ...(activeTab
+        ? [
+            {
+              ...rolesMenu.create(),
+              label: '',
+              style: ButtonStyle.Secondary,
+              emoji: getEmojiObject(emojis.buttons.back),
+            },
+          ]
+        : []),
+      ...Object.keys(roles).map((roleMenu) => ({
+        ...RolesButton.create(roleMenu),
+        disabled: activeTab === roleMenu,
+      })),
+    ],
+  };
+}
