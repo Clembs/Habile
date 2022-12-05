@@ -1,5 +1,5 @@
 import { $button, $modal, getRest, InteractionReply, ShowModal } from '$core';
-import { colors, emojis } from '$lib/env';
+import { channels, colors, emojis } from '$lib/env';
 import { resolveMemberAvatarURL } from '@purplet/utils';
 import { ButtonStyle, ComponentType, MessageFlags, TextInputStyle } from 'discord-api-types/v10';
 
@@ -48,7 +48,7 @@ export const modal = $modal({
     const feedback = this.data.components[0].components[0];
 
     await getRest().channel.createMessage({
-      channelId: '739062033626169395',
+      channelId: channels.notifications,
       body: {
         embeds: [
           {

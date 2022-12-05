@@ -2,6 +2,7 @@ import { $button, getEmojiObject, InteractionReply, InteractionUpdate } from '$c
 import { colors, emojis, roles } from '$lib/env';
 import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
 import { RolesButton } from '../roles/handlers';
+import { SMPButton } from '../roles/smp';
 
 export const rolesMenu = $button({
   customId: 'menu_roles',
@@ -22,7 +23,13 @@ export const rolesMenu = $button({
           color: colors.default,
         },
       ],
-      components: [renderNavbar()],
+      components: [
+        renderNavbar(),
+        {
+          type: ComponentType.ActionRow,
+          components: [SMPButton.create(this.member.roles.includes('1021801774757195808'))],
+        },
+      ],
       flags: MessageFlags.Ephemeral,
     };
 

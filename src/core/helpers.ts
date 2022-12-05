@@ -7,6 +7,7 @@ import {
   APIInteractionResponseCallbackData,
   APIMessageComponentInteraction,
   APIModalInteractionResponseCallbackData,
+  APIModalSubmitInteraction,
   APIPartialEmoji,
   ComponentType,
   InteractionResponseType,
@@ -64,7 +65,7 @@ export function ShowModal(data: APIModalInteractionResponseCallbackData) {
 }
 
 export function InteractionUpdate(
-  i: APIMessageComponentInteraction,
+  i: APIMessageComponentInteraction | APIModalSubmitInteraction,
   data: APIInteractionResponseCallbackData
 ) {
   return APIResponse({

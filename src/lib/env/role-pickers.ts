@@ -60,25 +60,25 @@ export const roles = {
       },
     ],
   },
-  access: {
-    label: 'More',
-    title: 'Access more channels',
-    description:
-      "The server at its core is aiming for minimalism, which is why you don't see a lot of the hidden channels. Below is some roles to expand what you have access to.\nSome other channels are still kept private and require manual verification, like the #borderline channel.",
-    emoji: '🔓',
-    roles: [
-      {
-        id: '1021801774757195808',
-        name: 'Clembs SMP Early Access',
-        description: 'Enter the Clembs SMP Minecraft server, next holiday!',
-        emoji: '⛏️',
-      },
-      {
-        id: '1023546680454430721',
-        name: 'Join the Hydranation SMP clan! #ad',
-        description: 'We descend from newts to revive our glory on this world!',
-        // emoji: emojis.colors.azure,
-      },
-    ],
-  },
+  // access: {
+  //   label: 'More',
+  //   title: 'Access more channels',
+  //   description:
+  //     "The server at its core is aiming for minimalism, which is why you don't see a lot of the hidden channels. Below is some roles to expand what you have access to.\nSome other channels are still kept private and require manual verification, like the #borderline channel.",
+  //   emoji: '🔓',
+  //   roles: [
+  //     {
+  //       id: '1021801774757195808',
+  //       name: 'Clembs SMP Early Access',
+  //       description: 'Enter the Clembs SMP Minecraft server, next holiday!',
+  //       emoji: '⛏️',
+  //     },
+  //     {
+  //       id: '1023546680454430721',
+  //       name: 'Join the Hydranation SMP clan! #ad',
+  //       description: 'We descend from newts to revive our glory on this world!',
+  //       // emoji: emojis.colors.azure,
+  //     },
+  //   ],
+  // },
 };
