@@ -1,6 +1,19 @@
-import { $button, $modal, getEmojiObject, getRest, InteractionUpdate, ShowModal } from '$core';
+import {
+  $button,
+  $modal,
+  getEmojiObject,
+  getEnv,
+  getRest,
+  InteractionUpdate,
+  ShowModal,
+} from '$core';
 import { channels, colors, emojis } from '$lib/env';
-import { ButtonStyle, ComponentType, TextInputStyle } from 'discord-api-types/v10';
+import {
+  ButtonStyle,
+  ComponentType,
+  InteractionResponseType,
+  TextInputStyle,
+} from 'discord-api-types/v10';
 import { rolesMenu } from '../menus/roles';
 
 export const SMPButton = $button({
@@ -159,33 +172,45 @@ export const SMPRegisterModal = $modal({
     ],
   }),
   async handle() {
-    const playerName = this.data.components[0].components[0];
-    const isPremium = this.data.components[1].components[1];
+    const playerName = this.data.components[0].components[0].value;
+    const isPremium = this.data.components[1].components[0].value;
 
-    await getRest().channel.createMessage({
+    const defer = await getRest().interactionResponse.createInteractionResponse({
+      interactionToken: this.token,
       body: {
-        content: `<@${this.member.user.id}> (${this.member.user.username}) registered with the name \`${playerName.value}\`. Is premium set to ${isPremium.value}.`,
+        type: InteractionResponseType.DeferredMessageUpdate,
+      },
+      interactionId: this.id,
+    });
+
+    const sendMsg = await getRest().channel.createMessage({
+      body: {
+        content: `<@${this.member.user.id}> (${this.member.user.username}) registered with the name \`${playerName}\`. Is premium set to ${isPremium}.`,
       },
       channelId: channels.notifications,
     });
 
-    return await getRest()
-      .guild.addGuildMemberRole({
-        guildId: this.guild_id,
-        roleId: '1021801774757195808',
-        userId: this.member.user.id,
-      } as any)
-      .then((r) =>
-        InteractionUpdate(this, {
-          embeds: [
-            {
-              title: `You are succesfully registered! ${emojis.habile}`,
-              description: `You should now read <#${channels.smp_about}>, where you'll find some crucial information about the server.`,
-              color: colors.success,
-            },
-          ],
-          components: [],
-        })
-      );
+    const giveRole = await getRest().guild.addGuildMemberRole({
+      guildId: this.guild_id,
+      roleId: '1021801774757195808',
+      userId: this.member.user.id,
+    } as any);
+
+    const finalEdit = await getRest().interactionResponse.editOriginalInteractionResponse({
+      applicationId: getEnv().APPLICATION_ID,
+      body: {
+        embeds: [
+          {
+            title: `You are succesfully registered! ${emojis.habile}`,
+            description: `You should now read <#${channels.smp_about}>, where you'll find some crucial information about the server.`,
+            color: colors.success,
+          },
+        ],
+        components: [],
+      },
+      interactionToken: this.token,
+    });
+
+    return Promise.all([defer, sendMsg, giveRole, finalEdit]).then(() => new Response('ok'));
   },
 });
