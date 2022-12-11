@@ -1,97 +1,10 @@
-import { $button, getEmojiObject, getRest, InteractionUpdate } from '$core';
+import { $button, getEmojiObject, getRest, InteractionReply, InteractionUpdate } from '$core';
 import { channels, colors, emojis } from '$lib/env';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import enUS from '$lib/strings/en-US';
+import fr from '$lib/strings/fr';
+import ru from '$lib/strings/ru';
+import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
 import { rolesMenu } from '../menus/roles';
-
-// export const SMPButton = $button({
-//   customId: 'smp-button',
-//   template(enabled: boolean) {
-//     if (enabled) {
-//       return {
-//         label: 'Unregister from the Clembs SMP',
-//         style: ButtonStyle.Danger,
-//       };
-//     }
-//     return {
-//       label: 'Pre-register for the Clembs SMP',
-//       emoji: {
-//         name: '⛏️',
-//       },
-//       style: ButtonStyle.Primary,
-//     };
-//   },
-//   async handle() {
-//     if (this.member.roles.includes('1021801774757195808')) {
-//       return await getRest()
-//         .guild.removeGuildMemberRole({
-//           guildId: this.guild_id,
-//           roleId: '1021801774757195808',
-//           userId: this.member.user.id,
-//         } as any)
-//         .then(() =>
-//           InteractionUpdate(this, {
-//             embeds: [
-//               {
-//                 title: `You unregistered from the Clembs SMP Early Access! ${emojis.appreciable_meal}`,
-//                 description:
-//                   'If you change your mind, simply come back to this menu. Beware that once the Early Access starts, you will no longer be able to pre-register.',
-//                 color: colors.success,
-//               },
-//             ],
-//             components: [
-//               {
-//                 type: ComponentType.ActionRow,
-//                 components: [
-//                   {
-//                     ...rolesMenu.create(),
-//                     label: 'Back to role editing',
-//                     style: ButtonStyle.Secondary,
-//                     emoji: getEmojiObject(emojis.buttons.back),
-//                   },
-//                 ],
-//               },
-//             ],
-//           })
-//         );
-//     }
-
-//     return InteractionUpdate(this, {
-//       embeds: [
-//         {
-//           title: 'Clembs SMP Early Access Pre-registration',
-//           description: `The Clembs SMP early access phase is opening <t:${
-//             new Date('2022-12-09T19:00:00+00:00').valueOf() / 1000
-//           }:R>, so make sure to pre-register before time runs out! It'll open **publicly** the week after, so if you choose to ignore this phase you won't be missing out!\n\nYou can choose to play and pre-register, or just to get the role and spectate.`,
-//           color: colors.default,
-//         },
-//       ],
-//       components: [
-//         {
-//           type: ComponentType.ActionRow,
-//           components: [
-//             {
-//               ...rolesMenu.create(),
-//               label: '',
-//               style: ButtonStyle.Secondary,
-//               emoji: getEmojiObject(emojis.buttons.back),
-//             },
-//             SMPRegisterButton.create(),
-//             SMPNoRegisterButton.create(),
-//           ],
-//         },
-//       ],
-//     });
-//   },
-// });
-
-// export const SMPRegisterButton = $button({
-//   customId: 'register-smp',
-//   template: () => ({
-//     label: 'I want to play!',
-//     style: ButtonStyle.Primary,
-//   }),
-//   handle: () => ShowModal(SMPRegisterModal.create()),
-// });
 
 export const SMPButton = $button({
   customId: 'no-register-smp',
@@ -165,83 +78,86 @@ export const SMPButton = $button({
   },
 });
 
-// export const SMPRegisterModal = $modal({
-//   customId: 'smp-modal',
-//   template: () => ({
-//     title: 'Clembs SMP Pre-registration Form',
-//     components: [
-//       {
-//         type: ComponentType.ActionRow,
-//         components: [
-//           {
-//             type: ComponentType.TextInput,
-//             label: 'Your Minecraft player username',
-//             custom_id: 'player_name',
-//             style: TextInputStyle.Short,
-//             max_length: 100,
-//             min_length: 3,
-//             placeholder: 'For example, "Clembs"',
-//             required: true,
-//           },
-//         ],
-//       },
-//       {
-//         type: ComponentType.ActionRow,
-//         components: [
-//           {
-//             type: ComponentType.TextInput,
-//             label: 'Did you pay for the game?',
-//             custom_id: 'is_premium',
-//             style: TextInputStyle.Short,
-//             max_length: 3,
-//             min_length: 2,
-//             required: true,
-//             placeholder: 'Yes, or no.',
-//           },
-//         ],
-//       },
-//     ],
-//   }),
-//   async handle() {
-//     const playerName = this.data.components[0].components[0].value;
-//     const isPremium = this.data.components[1].components[0].value;
+export const SMPRulesBtn = $button({
+  customId: 'smp-rules',
+  template: () => ({
+    label: 'Read Rules',
+    style: ButtonStyle.Primary,
+  }),
+  handle() {
+    return InteractionReply({
+      embeds: [
+        {
+          title: `Clembs SMP - Server Rules`,
+          description: `
+**1.** You must not use a cheating client or try to hack any player.
+**2.** You must not create "lag machines", or any kind of exploit/Redstone machine to forcefully create lag on the server.
+**3.** You may change teams, create teams at any moment. Just ask me via DMs.
+**4.** You may respect each team's rules, or not!
+**5.** You must not connect to another player's account illegally.
+**6.** You must not try to DDoS the server or use any kinds of attacks against it.
+**7.** You must not use slurs, use bigotry, or any kind of messages that may be discriminative.
+**8.** You must comply to the same rules as this Discord server uses, including Discord's Terms of Service.
+**9.** You must not use alternate accounts, whether to give yourself an advantage or not.
+**10.** For any kind of public events (global chats when I'm streaming, or another kind of general event), you may only use English, even if that requires someone else to translate your messages afterwards or any kind of online translator.
+**11.** You may not create any kinds of inappropriate art within Minecraft.
+`,
+          color: colors.default,
+        },
+      ],
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+});
 
-//     const defer = await getRest().interactionResponse.createInteractionResponse({
-//       interactionToken: this.token,
-//       body: {
-//         type: InteractionResponseType.DeferredMessageUpdate,
-//       },
-//       interactionId: this.id,
-//     });
+export const SMPGuideBtn = $button({
+  customId: 'smp-guide',
+  template: () => ({
+    label: 'View Guide',
+    style: ButtonStyle.Primary,
+  }),
+  handle() {
+    const strings = {
+      'en-US': enUS.smp.guide,
+      fr: fr.smp.guide,
+      ru: ru.smp.guide,
+    };
 
-//     const sendMsg = await getRest().channel.createMessage({
-//       body: {
-//         content: `<@${this.member.user.id}> (${this.member.user.username}) registered with the name \`${playerName}\`. Is premium set to ${isPremium}.`,
-//       },
-//       channelId: channels.notifications,
-//     });
+    const embed: typeof enUS.smp.guide = strings[this.locale] ?? strings['en-US'];
 
-//     const giveRole = await getRest().guild.addGuildMemberRole({
-//       guildId: this.guild_id,
-//       roleId: '1021801774757195808',
-//       userId: this.member.user.id,
-//     } as any);
+    console.log(
+      JSON.stringify({
+        title: embed.title,
+        fields: embed.steps.map(([name, value], i) => ({
+          name: `${i + 1} ${name}`,
+          value: value
+            .replace('{optifine}', 'https://optifine.net/adloadx?f=OptiFine_1.19.2_HD_U_H9.jar')
+            .replace(
+              '{sodium}',
+              'https://github.com/CaffeineMC/sodium-fabric/releases/tag/mc1.19.2-0.4.4'
+            ),
+        })),
+        color: colors.default,
+      })
+    );
 
-//     const finalEdit = await getRest().interactionResponse.editOriginalInteractionResponse({
-//       applicationId: getEnv().APPLICATION_ID,
-//       body: {
-//         embeds: [
-//           {
-//             title: `You are succesfully registered! ${emojis.habile}`,
-//             description: `You should now read <#${channels.smp_about}>, where you'll find some crucial information about the server.`,
-//             color: colors.success,
-//           },
-//         ],
-//         components: [],
-//       },
-//       interactionToken: this.token,
-//     });
-
-//     return Promise.all([defer, sendMsg, giveRole, finalEdit]).then(() => new Response('ok'));
-//   },
-// });
+    return InteractionReply({
+      embeds: [
+        {
+          title: embed.title,
+          fields: embed.steps.map(([name, value], i) => ({
+            name: `${i + 1} ${name}`,
+            value: value
+              .replace('{optifine}', 'https://optifine.net/adloadx?f=OptiFine_1.19.2_HD_U_H9.jar')
+              .replace(
+                '{sodium}',
+                'https://github.com/CaffeineMC/sodium-fabric/releases/tag/mc1.19.2-0.4.4'
+              ),
+          })),
+          color: colors.default,
+        },
+      ],
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+});

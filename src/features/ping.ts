@@ -53,7 +53,7 @@ export default $slashCommand({
       `***hey ${this.member.user.username}... lookin' hot today :smirk:***`,
       '"Good, Great, Awesome, Outstanding, AMAZING!"',
       '"You never grab too many pings!"',
-      'New fish every week!',
+      'New fish every monday!',
       '349 pages of Habile lore',
       '"Habile will never be balling"',
       '"Strange, isn\'t it?"',
@@ -65,7 +65,7 @@ export default $slashCommand({
       'Find me at Pumpkin Hill!',
       `Only on <#${this.channel_id}>`,
       'いただきますー!',
-      `Cactiver OP must nerf ${emojis.cactiver}`,
+      `Cactiver OP must nerf ${emojis.fish_happy}`,
       'Clembs is not 12!',
     ];
     const phrase = randomPhrases[Math.floor(Math.random() * randomPhrases.length)];

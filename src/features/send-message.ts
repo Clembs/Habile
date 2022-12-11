@@ -1,9 +1,11 @@
 import { $button, getRest, InteractionReply } from '$core';
-import { colors, emojis } from '$lib/env';
+import { channels, colors, emojis } from '$lib/env';
 import { createLinkButton } from '@purplet/utils';
+import dedent from 'dedent';
 import { ComponentType } from 'discord-api-types/v10';
 import { feedbackMenu } from './menus/feedback';
 import { rolesMenu } from './menus/roles';
+import { SMPGuideBtn, SMPRulesBtn } from './roles/smp';
 
 export default $button({
   customId: 'send',
@@ -69,6 +71,56 @@ export default $button({
       channelId:
         // '1037103610137419866' ??
         '738747677084483624',
+    });
+
+    return InteractionReply({});
+  },
+});
+
+export const smpSend = $button({
+  customId: 'send-smp',
+  handle() {
+    getRest().channel.createMessage({
+      body: {
+        embeds: [
+          {
+            color: colors.default,
+            image: {
+              url: 'https://cdn.discordapp.com/attachments/1037085832198230147/1051303588523159582/image.png',
+            },
+          },
+          {
+            title: `${emojis.clembs}  Clembs SMP Early Access - About`,
+            description: dedent`
+              The Clembs SMP is a Minecraft server where many players come together to build, fight, survive and create!
+              The Early Access, opened since December 9, is not finalized and will be reset next week, for the public launch to come.
+              
+              Before joining the server, you should read the rules and the lore (origin story of the server).
+
+              **If you're unexperienced to the SMP, click the "View Guide" button below!**
+              `,
+            color: colors.default,
+          },
+        ],
+        components: [
+          {
+            type: ComponentType.ActionRow,
+            components: [
+              SMPGuideBtn.create(),
+              SMPRulesBtn.create(),
+              createLinkButton(
+                'Read lore',
+                'https://discord.com/channels/738747595438030888/1023518028694040576/1043619367893602314'
+              ),
+              createLinkButton(
+                'Members list',
+                'https://clembs.notion.site/fa3c9f293d8d49c3b5703b3ee72a861d?v=41a8929478dd4d60a75928c204b2d217'
+              ),
+            ],
+          },
+        ],
+      },
+      channelId: channels.smp_about,
     });
 
     return InteractionReply({});
