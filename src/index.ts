@@ -77,8 +77,10 @@ export default {
 
       if (isComponent(i)) {
         const component = Array.from(components.values()).find(
-          (c) => i.data.custom_id === c.customId ?? i.data.custom_id.startsWith(c.customId)
+          (c) => i.data.custom_id === c.customId || i.data.custom_id.startsWith(c.customId)
         );
+
+        console.log(i.data.custom_id);
 
         const data = resolveCustomIdData(i.data.custom_id);
 

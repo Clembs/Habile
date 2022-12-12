@@ -146,7 +146,7 @@ export const SMPGuideBtn = $button({
         {
           title: embed.title,
           fields: embed.steps.map(([name, value], i) => ({
-            name: `${i + 1} ${name}`,
+            name: `${i + 1}. ${name}`,
             value: value
               .replace('{optifine}', 'https://optifine.net/adloadx?f=OptiFine_1.19.2_HD_U_H9.jar')
               .replace(
