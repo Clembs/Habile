@@ -86,18 +86,17 @@ export const smpSend = $button({
           {
             color: colors.default,
             image: {
-              url: 'https://cdn.discordapp.com/attachments/1037085832198230147/1051303588523159582/image.png',
+              url: 'https://cdn.discordapp.com/attachments/1037085832198230147/1053708509801369721/image.png',
             },
           },
           {
-            title: `${emojis.clembs}  Clembs SMP Early Access - About`,
+            title: `${emojis.clembs}  Clembs SMP - About`,
             description: dedent`
-              The Clembs SMP is a Minecraft server where many players come together to build, fight, survive and create!
-              The Early Access, opened since December 9, is not finalized and will be reset next week, for the public launch to come.
+              The Clembs SMP (Survival Multi Player) is a Minecraft server where many players come together to build, fight, survive and create!
               
               Before joining the server, you should read the rules and the lore (origin story of the server).
 
-              **If you're unexperienced to the SMP, click the "View Guide" button below!**
+              **For a comprehensive guide to start the server, click the "View Guide" button below!**
               `,
             color: colors.default,
           },

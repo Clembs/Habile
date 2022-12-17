@@ -4,12 +4,12 @@ export default {
       title: 'Clembs SMP - Getting started',
       steps: [
         [
-          'Install Minecraft Java 1.19.2',
+          'Install Minecraft Java 1.19.2 or above',
           'Cracks are supported, but consider buying the game if you can :P\n[OptiFine]({optifine}) or [Sodium]({sodium}) recommended!',
         ],
         [
           'Join the `smp.clembs.com` server',
-          'Only pre-registered players can join! Check with the "Members list" button below.',
+          'Only registered players can join! Check with the "Members list" button below.',
         ],
         [
           'Sign in!',

@@ -36,8 +36,7 @@ export const SMPButton = $button({
             embeds: [
               {
                 title: `You unregistered from the Clembs SMP Early Access! ${emojis.appreciable_meal}`,
-                description:
-                  'If you change your mind, simply come back to this menu. Beware that once the Early Access starts, you will no longer be able to pre-register.',
+                description: 'If you change your mind, simply come back to this menu.',
                 color: colors.success,
               },
             ],
@@ -68,7 +67,7 @@ export const SMPButton = $button({
           embeds: [
             {
               title: `You were added to the Clembs SMP channels! ${emojis.habile}`,
-              description: `You should now read <#${channels.smp_about}>, where you'll find some crucial information about the server. You won't be able to play as pre-registrations are now closed. Worry not, since the server will be public the following week!`,
+              description: `You should now read <#${channels.smp_about}>, where you'll find some crucial information about the server.`,
               color: colors.success,
             },
           ],
