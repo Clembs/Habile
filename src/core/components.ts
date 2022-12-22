@@ -52,20 +52,14 @@ export interface ModalData<P> extends BaseComponentData<P> {
 }
 
 function generateCustomId(props?: any) {
-  let id = '';
   const j =
-    typeof props === 'object'
-      ? JSON.stringify({ [Object.keys(props)[0]]: props[Object.keys(props)[0]] })
-      : props
-      ? String(props)
+    props !== undefined
+      ? typeof props === 'object'
+        ? JSON.stringify({ [Object.keys(props)[0]]: props[Object.keys(props)[0]] })
+        : String(props)
       : '';
-  console.log(j);
-  if (j) {
-    id += j.slice(0, 50);
-  } else {
-    id += Math.round(Math.random() * 10000).toString();
-  }
-  return id;
+
+  return j !== '' ? j.slice(0, 50) : Math.round(Math.random() * 10000).toString();
 }
 
 function $component<
@@ -83,9 +77,7 @@ function $component<
       // @ts-ignore
       return {
         ...temp,
-        custom_id: templateProps
-          ? `${data.customId}_${generateCustomId(templateProps)}`
-          : data.customId,
+        custom_id: `${data.customId}_${generateCustomId(templateProps)}`,
         type: data.type,
       };
     },

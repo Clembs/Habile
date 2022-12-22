@@ -3,6 +3,8 @@ export default {
     pencil: '<:pencil_white:970980243013779536>',
     back: '<:left_arrow_white:987721485978304514>',
     rules: '<:infoRules:1049071032033607741>',
+    left_arrow: '<:left_arrow_white:987721485978304514>',
+    right_arrow: '<:right_arrow_white:987721488557801552>',
   },
   colors: {
     crimson: '<:crimson:1047534526383013959>',
