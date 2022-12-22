@@ -79,7 +79,10 @@ export default {
         const customId = i.data.custom_id.split('_').slice(0, -1).join('_');
 
         const component = Array.from(components.values()).find(
-          (c) => customId === c.customId || customId.startsWith(c.customId)
+          (c) =>
+            customId === c.customId ||
+            customId.startsWith(c.customId) ||
+            i.data.custom_id.startsWith(c.customId)
         );
 
         const data = resolveCustomIdData(i.data.custom_id);
