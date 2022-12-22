@@ -64,6 +64,26 @@ export default {
       emoji: '⛏️',
       value: `You may find the Clembs SMP rules by going to <#${channels.smp_about}>, granted you have access to the channel.`,
     },
+    {
+      name: 'Admin & moderator guidelines',
+      emoji: '🛠️',
+      value: dedent`
+      **Activity & Events:**
+      • Make sure to keep the server fresh, interesting and active
+      • Be active yourself, and create engagement by creating events or sending messages that will create debate, interest or just reactions!
+      • Examples of events includes game tournaments, movie nights, on-server minigames (clembs-says, story-event, 2022-goals... just to name a few)
+      
+      **Adding content:**
+      • Feel free to suggest adding content that is wanted or you think is relevant
+      • Before adding a channel, make sure that it isn't already in one of the archives, if so bring that back instead
+      • If I intentionally removed something, ask me why before bringing it back
+      
+      **Moderation:**
+      • Be friendly to everyone, but don't hesitate on using your powers if something goes out of hand
+      • Keep the server on-brand and teen friendly too, so apply to the rules, make people apply to them, avoid drama, insults, mean stuff, etc
+      • Whenever possible, use CRBT's moderation commands instead of Discord's built-ins 
+      `,
+    },
   ],
   smp: {
     guide: {
