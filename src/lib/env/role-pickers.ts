@@ -52,12 +52,6 @@ export const roles = {
         description: 'Know when I stream out of schedule.',
         emoji: '📺',
       },
-      {
-        id: '1035582884691595384',
-        name: 'Creative Awards',
-        description: 'Be aware of #creative-awards announcements.',
-        emoji: '🎨',
-      },
     ],
   },
   // access: {

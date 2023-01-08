@@ -43,26 +43,12 @@ export default {
       • The post containing the art should clearly denote the sexual character of the creation in its title.`,
     },
     {
-      name: 'Creative Awards rules',
-      emoji: '⛄',
-      value: dedent`
-      • You can vote for as many of your favorite posts by ❤️-reacting to them.
-      • A creator may upload multiple entries.
-      • Voting for your own post will not affect the score and be subtracted when making the results.
-`,
-    },
-    {
       name: 'Borderline rules',
       emoji: '💥',
       value: dedent`
       • Dark, midly offensive or suggestive themes and humor may be tolerated
       • Keep this channel suitable for individuals 16 or older, so no NSFW allowed (NSFW-themes can be allowed depending on what it is. keep common sense in mind.)
       • I do not necessarily approve myself of anything posted by other people.`,
-    },
-    {
-      name: 'Clembs SMP rules',
-      emoji: '⛏️',
-      value: `You may find the Clembs SMP rules by going to <#${channels.smp_about}>, granted you have access to the channel.`,
     },
     {
       name: 'Admin & moderator guidelines',
@@ -85,27 +71,4 @@ export default {
       `,
     },
   ],
-  smp: {
-    guide: {
-      title: 'Clembs SMP - Getting started',
-      steps: [
-        [
-          'Install Minecraft Java 1.19.2 or above',
-          'Cracks are supported, but consider buying the game if you can :P\n[OptiFine]({optifine}) or [Sodium]({sodium}) recommended!',
-        ],
-        [
-          'Join the `smp.clembs.com` server',
-          'Only registered players can join! Check with the "Members list" button below.',
-        ],
-        [
-          'Sign in!',
-          'To prevent cracked account abuse, you will be required to create and use a password when entering.',
-        ],
-        [
-          'Join a team, or create one!',
-          "Completely optional, but you're welcome to join or create teams!",
-        ],
-      ],
-    },
-  },
 };
