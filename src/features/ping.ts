@@ -3,6 +3,7 @@ import { colors, emojis } from '$lib/env';
 import { createLinkButton, snowflakeToDate } from '@purplet/utils';
 import dedent from 'dedent';
 import { ComponentType } from 'discord-api-types/v10';
+import sendMessage from './send-message';
 
 export default $slashCommand({
   name: 'ping',
@@ -90,6 +91,7 @@ export default $slashCommand({
             createLinkButton('Source code', 'https://github.com/Clembs/Habile-Discord'),
             createLinkButton('Donate', 'https://clembs.com/donate'),
             createLinkButton('Twitch', 'https://twitch.tv/clembs'),
+            sendMessage.create(),
           ],
           type: ComponentType.ActionRow,
         },
