@@ -1,8 +1,8 @@
 import { $slashCommand, InteractionReply } from '$core';
-import { colors, emojis } from '$lib/env';
+import { emojis } from '$lib/env';
 import { createLinkButton, snowflakeToDate } from '@purplet/utils';
 import dedent from 'dedent';
-import { ComponentType } from 'discord-api-types/v10';
+import { ComponentType, MessageFlags } from 'discord-api-types/v10';
 
 export default $slashCommand({
   name: 'ping',
@@ -28,11 +28,10 @@ export default $slashCommand({
       '100% Discord.js free!',
       'Running on not-Purplet v2!',
       '"Together, we will devour the very gods!"',
-      '【39 People!】 :heart:',
       '"It\'s no use!"',
       '"Ah yeah, this is happenin\'!"',
       '"It\'s Morbin\' Time!"',
-      'RIP Bonk.io tournaments - 2021-2021',
+      'RIP Bonk.io tournaments - 2021-2022',
       '"If you\'re over 25 and own a computer, this bot is a must-have!"',
       '"Growing up, I spent hours stomping..."',
       '"Wanna break from the ads? Get Habile Premium for $12.99 to enjoy your bot for longer with no interruptions!"',
@@ -61,40 +60,42 @@ export default $slashCommand({
       `"Foolishness, ${this.member.user.username}, foolishness."`,
       'Made in Carcassonne!',
       'May contain nuts',
-      'Not suitable for teens under 13.',
+      'Not suitable for teens under 15.',
       'Find me at Pumpkin Hill!',
       `Only on <#${this.channel_id}>`,
       'いただきますー!',
       `Cactiver OP must nerf ${emojis.fish_happy}`,
       'Clembs is not 12!',
+      `Rightloading...`,
     ];
     const phrase = randomPhrases[Math.floor(Math.random() * randomPhrases.length)];
 
     return InteractionReply({
-      embeds: [
-        {
-          description: dedent`${emojis.habile} ${phrase}
-           `,
-          fields: [
-            {
-              name: 'Interaction latency',
-              value: `${Date.now() - timestamp.getTime()}ms`,
-            },
-          ],
-          color: colors.default,
-        },
-      ],
+      content: dedent`
+      ## ${emojis.habile.happy} Pong! Took ${((Date.now() - timestamp.getTime()) / 1000).toFixed(
+        2
+      )}s to reply.
+      > _${phrase}_
+       `,
+      // embeds: [
+      //   {
+      //     description: dedent`
+      //     ### ${emojis.habile} ${phrase}
+      //     Took ${Date.now() - timestamp.getTime()}ms to reply!
+      //      `,
+      //     color: colors.default,
+      //   },
+      // ],
       components: [
         {
           components: [
             createLinkButton('Source code', 'https://github.com/Clembs/Habile-Discord'),
             createLinkButton('Donate', 'https://clembs.com/donate'),
-            createLinkButton('Twitch', 'https://twitch.tv/clembs'),
           ],
           type: ComponentType.ActionRow,
         },
       ],
-      // flags: MessageFlags.SuppressEmbeds,
+      flags: MessageFlags.SuppressEmbeds,
     });
   },
 });
