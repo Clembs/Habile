@@ -1,0 +1,6 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [main]
+    
