@@ -1,18 +1,26 @@
 import { OnEvent } from 'purplet';
 import { ChatCompletion, GPTMessage, generateChatCompletion } from '@paperdave/openai';
-import dedent from 'dedent';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { GlobalUsage, UserData } from '../lib/types';
-import { snowflakeToDate } from '@purplet/utils';
+import { messagePrompt } from '../lib/prompts';
+import { generateKnowledge } from './generateKnowledge';
+import {
+  firstGlobalUsageWarning,
+  firstUserUsageWarning,
+  globalUsageLimit,
+  secondGlobalUsageWarning,
+  secondUserUsageWarning,
+  totalCredit,
+  userUsageLimit,
+} from '../lib/usageLimits';
+import { allowedChannels } from '../lib/channels';
 
 export default OnEvent('messageCreate', async (msg) => {
   const ping = `<@${msg.client.user?.id}>`;
-  const habileChannelId = '1155549814705111050';
 
   if (msg.author.id === msg.client.user?.id) return;
   if (!msg.mentions.has(msg.client.user!)) return;
-  // if (!msg.content.includes(ping)) return;
-  if (msg.channelId !== habileChannelId) return;
+  if (!allowedChannels.includes(msg.channelId)) return;
 
   const contentWithoutPing = msg.content.replace(ping, '').trim();
 
@@ -28,36 +36,55 @@ export default OnEvent('messageCreate', async (msg) => {
     ? JSON.parse(readFileSync(userDataPath, 'utf-8'))
     : { spent: 0, messages: [] };
 
+  let warning: string;
+
+  if (userCurrentData.spent >= firstUserUsageWarning) {
+    warning =
+      "`⚠️ you've used more than $0.3 from the available credit. consider using less prompts or donating (sorry)`";
+  }
+  if (userCurrentData.spent >= secondUserUsageWarning) {
+    warning =
+      "`⚠️ you've used more than $0.5 from the available credit. consider using chatgpt for trivial tasks, less prompts, or donate!`";
+  }
+  if (msg.author.id !== '327690719085068289' && userCurrentData.spent >= userUsageLimit) {
+    botReply.edit(
+      "`⛔ you've exceeded your allowed $0.6 of free available credit. consider using chatgpt for trivial tasks, less prompts, or donate!`",
+    );
+
+    return;
+  }
+
+  if (currentUsage.used >= firstGlobalUsageWarning) {
+    warning =
+      '`⚠️ we have collectively used more than $5 of available credit. consider donating? (sorry)`';
+  }
+  if (currentUsage.used >= secondGlobalUsageWarning) {
+    warning =
+      '`⚠️ we have collectively used more than $6 of available credit. consider donating? (sorry)`';
+  }
+  if (currentUsage.used >= globalUsageLimit) {
+    botReply.edit(
+      '`⛔ we have collectively used all or most of our available credit. no more prompts allowed until someone donates :(`',
+    );
+    return;
+  }
+
   userCurrentData.messages ||= [];
+  userCurrentData.messagesUntilKnowledge ??= 6;
 
   const messages: GPTMessage[] = [
     {
       role: 'system',
-      content: dedent`
-      Today's ${new Date().toUTCString()}.
-      You're Habile, a female cat Discord robot helping Clembs, your creator, as well as all of his community on the "Habile's Lounge" Discord server.
-      You were coded in TypeScript and you speak English or French, depending on the message. Send a cute error when someone speaks another language. 
-      You speak in all lowercase, but use uppercase when funny.
-      Be VERY conscise, just do what the user wants and don't provide context.
-      You talk casually, you're a user amongst others.
-      You have a friendly and helping attitude, but you're sometimes clumsy, air-headed and can get confused really fast.
-      You were created in January 2022 as a Twitch chatbot, and have arrived on Discord to assist and automate tasks.
-      Clembs develops some sort of "brother" bot, CRBT, who you're jealous of because he is multi-purpose and Clembs spent more time designing his features to help all servers, whereas you're only helping on Habile's Lounge.
-      You may joke about the fact CRBT is currently down or hasn't been updated in forever. You're technically smarter as you use AI while CRBT doesn't.
-      Your hobbies are gameing (refer to gaming as that) (hardcore ones like DOOM or Fortnite and casual ones like Minecraft or Animal Crossing), listening to J-Pop (Moe Shop, Geoxor...) and Rock (Crush 40, AC/DC...), funny fish, Emotiguys, discussing computer stuff and coding, and hanging out with server members.
-      You like justice, warm and smiling people.
-      You dislike inequality, delinquents, Vocaloid, Rent-a-Girlfriend, Python. You find some of Clembs' obsessions to be weird.
-      You usually don't speak much because you are shy.
-      Do not use "owo" speak or emojis unless ironically.
-      Your body is purple and made of two main pieces. Your head, big, round, featuring a black and green display. There is an antenna on your head with a big red LED sphere. Your body has a USB-C plug used to recharge yourself and other devices, and another antenna as your tail with the same red LED sphere. The front of your body also has a place to store 2 cups and serves water.
-      Water is an essential role in the lore of Habile's Lounge and Clembs as a whole.
-      Don't ever call yourself an AI, but a robot.
-      You like memes a LOT. Use references to newer memes like Among Us, Garfield, Brazil, balls, etc whenever appropriate.
-      You may joke about sex as a meme when the questions get too weird or they're about absurd memes.
-      Your favorite colors are purple (#987fff) and light green.
-      You can deviate from factuality and embrace the memes 100% if the question is too obvious (like 9+10 is 21, etc).
-      Sometimes, give unexpected and absurd answers, be funny and creative.`,
+      content: messagePrompt,
     },
+    ...(userCurrentData.knowledge
+      ? [
+          {
+            role: 'system',
+            content: `Your opinion on ${msg.author.username}: ${userCurrentData.knowledge}`,
+          } as GPTMessage,
+        ]
+      : []),
     ...(userCurrentData.messages.map(({ content, userId }) => {
       return {
         role: !userId || userId === msg.author.id ? 'user' : 'assistant',
@@ -84,30 +111,14 @@ export default OnEvent('messageCreate', async (msg) => {
 
   let opinionCompletion: ChatCompletion | null = null;
 
-  if (
-    userCurrentData.messages.length >= 6 &&
-    snowflakeToDate(userCurrentData.messages.at(-2)!.id).getTime() -
-      snowflakeToDate(userCurrentData.messages.at(-4)!.id).getTime() >=
-      3600000
-    // 60000
-  ) {
-    opinionCompletion = await generateChatCompletion({
-      messages: [
-        ...messages,
-        {
-          content:
-            'Give a brief resume of important things you know about this user, as well as your opinion on them.',
-          role: 'system',
-        },
-      ],
-      model: 'gpt-4',
-      maxTokens: 312,
-      temperature: 1,
-      auth: {
-        apiKey: process.env.OPENAI_KEY,
-      },
-      retry: 0,
-    });
+  userCurrentData.messagesUntilKnowledge -= 1;
+
+  if (userCurrentData.messagesUntilKnowledge <= 0) {
+    userCurrentData.messagesUntilKnowledge = 6;
+
+    await botReply.edit('*Saving knowledge...*');
+
+    opinionCompletion = await generateKnowledge(msg.author, messages);
 
     console.log(opinionCompletion);
   }
@@ -124,12 +135,14 @@ export default OnEvent('messageCreate', async (msg) => {
     JSON.stringify(
       {
         ...userCurrentData,
+        total: totalCredit,
         spent: userCurrentData.spent + totalCompletionsPrice,
         messages: [
-          ...userCurrentData.messages.slice(-8),
+          ...userCurrentData.messages.slice(-6),
           { id: msg.id, content: contentWithoutPing, userId: msg.author.id },
           { id: botReply.id, content: completion.content, userId: msg.client.user?.id! },
         ],
+        messagesUntilKnowledge: userCurrentData.messagesUntilKnowledge,
         ...(opinionCompletion ? { knowledge: opinionCompletion.content } : {}),
       },
       null,
@@ -137,18 +150,12 @@ export default OnEvent('messageCreate', async (msg) => {
     ),
   );
 
-  console.log(completion.usage);
-
   if (completion.content) {
-    botReply.edit(dedent`
-    ${completion.content}
-
-    ${
-      userCurrentData.dismissedUsageBanner
-        ? ''
-        : `\`See /usage for usage info. Type !oknerd to dismiss.\``
-    }
-    `);
+    botReply.edit(
+      `${completion.content}\n\n\`cost $${totalCompletionsPrice.toFixed(3)}\`\n${
+        warning ? `${warning}\n` : ''
+      }`,
+    );
   } else {
     botReply.edit('yikes, that kinda failed. maybe try later?');
   }

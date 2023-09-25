@@ -3,6 +3,7 @@ export type UserData = {
   messages: { id: string; content: string; userId?: string }[];
   dismissedUsageBanner?: boolean;
   knowledge?: string;
+  messagesUntilKnowledge?: number;
 };
 
 export type GlobalUsage = {
