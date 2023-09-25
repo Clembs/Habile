@@ -30,8 +30,6 @@ export default TextCommand({
       return;
     }
 
-    console.log(userCurrentData);
-
     const knowledgeCompletion = await generateKnowledge(user, [
       {
         role: 'system',
@@ -41,7 +39,7 @@ export default TextCommand({
         ? [
             {
               role: 'system',
-              content: `Your opinion on ${user.username}: ${userCurrentData.knowledge}`,
+              content: `Your previous knowledge about ${user.username}: ${userCurrentData.knowledge}`,
             } as GPTMessage,
           ]
         : []),
@@ -80,8 +78,8 @@ export async function generateKnowledge(discordUser: User, messages: GPTMessage[
     messages: [
       ...messages,
       {
-        content: `What do you think of ${discordUser.username}? What are key things you know about them?`,
         role: 'system',
+        content: `Based on your previous knowledge and the past user messages, what do you think of ${discordUser.username}? Summarize key things you know about them.`,
       },
     ],
     model: 'gpt-4',
