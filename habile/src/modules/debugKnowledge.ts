@@ -1,11 +1,15 @@
-import { TextCommand } from 'purplet';
+import { ChatCommand, OptionBuilder } from 'purplet';
 import { UserData } from '../lib/types';
 import { existsSync, readFileSync } from 'fs';
 
-export default TextCommand({
+export default ChatCommand({
   name: 'knowledge',
-  async handle() {
-    const userDataPath = `./static/users/${this.author.id}.json`;
+  description: 'Debugs what Habile knows about you and what she thinks about you.',
+  options: new OptionBuilder().user('user', 'Whose knowledge to get'),
+  async handle({ user }) {
+    user ??= this.user;
+
+    const userDataPath = `./static/users/${user.id}.json`;
 
     const userCurrentData: UserData = existsSync(userDataPath)
       ? JSON.parse(readFileSync(userDataPath, 'utf-8'))
