@@ -10,6 +10,7 @@ import {
   globalUsageLimit,
   secondGlobalUsageWarning,
   secondUserUsageWarning,
+  supporterUsageLimit,
   totalCredit,
   userUsageLimit,
 } from '../lib/usageLimits';
@@ -39,16 +40,17 @@ export default OnEvent('messageCreate', async (msg) => {
   let warning: string;
 
   if (userCurrentData.spent >= firstUserUsageWarning) {
-    warning =
-      "`⚠️ you've used more than $0.3 from the available credit. consider using less prompts or donating (sorry)`";
+    warning = `\`⚠️ you've used $${userCurrentData.spent.toFixed(3)}/$${userUsageLimit.toFixed(
+      3,
+    )} remaining credit. consider chatgpt, less prompts or donating (sorry)\``;
   }
-  if (userCurrentData.spent >= secondUserUsageWarning) {
-    warning =
-      "`⚠️ you've used more than $0.5 from the available credit. consider using chatgpt for trivial tasks, less prompts, or donate!`";
-  }
-  if (msg.author.id !== '327690719085068289' && userCurrentData.spent >= userUsageLimit) {
+  if (
+    msg.author.id !== '327690719085068289' &&
+    userCurrentData.spent >=
+      (msg.member.roles.cache.has('986727860368707594') ? supporterUsageLimit : userUsageLimit)
+  ) {
     botReply.edit(
-      "`⛔ you've exceeded your allowed $0.6 of free available credit. consider using chatgpt for trivial tasks, less prompts, or donate!`",
+      `\`⛔ you've exceeded your allowed $${userUsageLimit} of remaining credit. consider chatgpt, less prompts or donating!\``,
     );
 
     return;
@@ -56,21 +58,21 @@ export default OnEvent('messageCreate', async (msg) => {
 
   if (currentUsage.used >= firstGlobalUsageWarning) {
     warning =
-      '`⚠️ we have collectively used more than $5 of available credit. consider donating? (sorry)`';
+      "`⚠️ we've collectively used more than half of remaining credit. consider donating? (sorry)`";
   }
   if (currentUsage.used >= secondGlobalUsageWarning) {
     warning =
-      '`⚠️ we have collectively used more than $6 of available credit. consider donating? (sorry)`';
+      "`⚠️ we've collectively used more than 3/4 of remaining credit. consider donating? (sorry)`";
   }
   if (currentUsage.used >= globalUsageLimit) {
     botReply.edit(
-      '`⛔ we have collectively used all or most of our available credit. no more prompts allowed until someone donates :(`',
+      "`⛔ we've collectively used most of our remaining credit. until a significant amount is donated, i cannot be asked... (gpt-4 isn't free!)`",
     );
     return;
   }
 
   userCurrentData.messages ||= [];
-  userCurrentData.messagesUntilKnowledge ??= 6;
+  userCurrentData.messagesUntilKnowledge ??= 5;
 
   const messages: GPTMessage[] = [
     {
@@ -81,7 +83,7 @@ export default OnEvent('messageCreate', async (msg) => {
       ? [
           {
             role: 'system',
-            content: `Your opinion on ${msg.author.username}: ${userCurrentData.knowledge}`,
+            content: `Your knowledge about ${msg.author.username}: ${userCurrentData.knowledge}`,
           } as GPTMessage,
         ]
       : []),
@@ -114,7 +116,7 @@ export default OnEvent('messageCreate', async (msg) => {
   userCurrentData.messagesUntilKnowledge -= 1;
 
   if (userCurrentData.messagesUntilKnowledge <= 0) {
-    userCurrentData.messagesUntilKnowledge = 6;
+    userCurrentData.messagesUntilKnowledge = 5;
 
     await botReply.edit('*Saving knowledge...*');
 
@@ -138,7 +140,7 @@ export default OnEvent('messageCreate', async (msg) => {
         total: totalCredit,
         spent: userCurrentData.spent + totalCompletionsPrice,
         messages: [
-          ...userCurrentData.messages.slice(-6),
+          ...userCurrentData.messages.slice(-4),
           { id: msg.id, content: contentWithoutPing, userId: msg.author.id },
           { id: botReply.id, content: completion.content, userId: msg.client.user?.id! },
         ],
@@ -151,11 +153,7 @@ export default OnEvent('messageCreate', async (msg) => {
   );
 
   if (completion.content) {
-    botReply.edit(
-      `${completion.content}\n\n\`cost $${totalCompletionsPrice.toFixed(3)}\`\n${
-        warning ? `${warning}\n` : ''
-      }`,
-    );
+    botReply.edit(`${completion.content}\n\n${warning ? `${warning}\n` : ''}`);
   } else {
     botReply.edit('yikes, that kinda failed. maybe try later?');
   }

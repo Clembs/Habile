@@ -2,7 +2,12 @@ import dedent from 'dedent';
 import { TextCommand } from 'purplet';
 import { readFileSync, readdirSync } from 'fs';
 import { GlobalUsage, UserData } from '../lib/types';
-import { userUsageLimit, firstUserUsageWarning, averageUsageCost } from '../lib/usageLimits';
+import {
+  userUsageLimit,
+  firstUserUsageWarning,
+  averageUsageCost,
+  supporterUsageLimit,
+} from '../lib/usageLimits';
 import { timestampMention } from '@purplet/utils';
 
 export default TextCommand({
@@ -30,7 +35,14 @@ export default TextCommand({
         .map(
           ([id, { spent }]) =>
             `\\- <@${id}>: **$${spent.toFixed(3)}** ${
-              spent >= userUsageLimit ? '(`⛔`)' : spent >= firstUserUsageWarning ? '(`⚠️`)' : ''
+              spent >=
+              (this.guild.members.cache.get(id).roles.cache.has('986727860368707594')
+                ? supporterUsageLimit
+                : userUsageLimit)
+                ? '(`⛔`)'
+                : spent >= firstUserUsageWarning
+                ? '(`⚠️`)'
+                : ''
             }`,
         )
         .join('\n')}
