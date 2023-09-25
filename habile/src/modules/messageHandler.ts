@@ -15,6 +15,8 @@ import {
   userUsageLimit,
 } from '../lib/usageLimits';
 import { allowedChannels } from '../lib/channels';
+import { supporterRoleId } from '../lib/roles';
+import { emojis } from '../lib/emojis';
 
 export default OnEvent('messageCreate', async (msg) => {
   const ping = `<@${msg.client.user?.id}>`;
@@ -39,18 +41,19 @@ export default OnEvent('messageCreate', async (msg) => {
 
   let warning: string;
 
+  const userLimit = msg.member.roles.cache.has(supporterRoleId)
+    ? supporterUsageLimit
+    : userUsageLimit;
   if (userCurrentData.spent >= firstUserUsageWarning) {
-    warning = `\`⚠️ you've used $${userCurrentData.spent.toFixed(3)}/$${userUsageLimit.toFixed(
-      3,
-    )} remaining credit. consider chatgpt, less prompts or donating (sorry)\``;
+    warning = `\`⚠️\` You've used ${emojis.hydrollar} ${Math.ceil(userCurrentData.spent * 100)} / ${
+      userLimit * 100
+    } of your usage. Consider ChatGPT, less prompts or donating?`;
   }
-  if (
-    msg.author.id !== '327690719085068289' &&
-    userCurrentData.spent >=
-      (msg.member.roles.cache.has('986727860368707594') ? supporterUsageLimit : userUsageLimit)
-  ) {
+  if (msg.author.id !== '327690719085068289' && userCurrentData.spent >= userLimit) {
     botReply.edit(
-      `\`⛔ you've exceeded your allowed $${userUsageLimit} of remaining credit. consider chatgpt, less prompts or donating!\``,
+      `\`⛔\` You've exceeded your allowed ${emojis.hydrollar} ${
+        userLimit * 100
+      } of usage. Consider donating?`,
     );
 
     return;
@@ -58,15 +61,15 @@ export default OnEvent('messageCreate', async (msg) => {
 
   if (currentUsage.used >= firstGlobalUsageWarning) {
     warning =
-      "`⚠️ we've collectively used more than half of remaining credit. consider donating? (sorry)`";
+      '`⚠️` We have collectively used more than half of our global usage. Consider donating?';
   }
   if (currentUsage.used >= secondGlobalUsageWarning) {
     warning =
-      "`⚠️ we've collectively used more than 3/4 of remaining credit. consider donating? (sorry)`";
+      '`⚠️` We have collectively used more than 3/4 of our global usage. Consider donating?';
   }
   if (currentUsage.used >= globalUsageLimit) {
     botReply.edit(
-      "`⛔ we've collectively used most of our remaining credit. until a significant amount is donated, i cannot be asked... (gpt-4 isn't free!)`",
+      "`⛔` We have collectively used most of our global usage. Until anyone donates ([Ko-fi](https://ko-fi.com/clembs) or [Boosty](https://boosty.to/clembs)), I cannot communicate with GPT 4 (it's not free!).",
     );
     return;
   }

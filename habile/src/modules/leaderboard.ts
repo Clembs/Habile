@@ -9,6 +9,8 @@ import {
   supporterUsageLimit,
 } from '../lib/usageLimits';
 import { timestampMention } from '@purplet/utils';
+import { emojis } from '../lib/emojis';
+import { supporterRoleId } from '../lib/roles';
 
 export default TextCommand({
   name: 'lb',
@@ -23,31 +25,34 @@ export default TextCommand({
     this.reply({
       content: dedent`
       # Habile Chat - Global Usage
-      **Total spent:** $${Number(totalUsage.used).toFixed(3)} / $${totalUsage.total.toFixed(
-        3,
-      )} ($${(totalUsage.total - totalUsage.used).toFixed(3)} remaining - about ${Math.round(
+      **Global usage**
+      ${emojis.hydrollar} ${Math.ceil(totalUsage.used * 100)} / ${
+        totalUsage.total * 100
+      } (~${Math.floor(
         (totalUsage.total - totalUsage.used) / averageUsageCost,
-      )} messages)
+      )} messages left for everyone)
 
-      **Spending per user:**
+      **Usage per user**
       ${users
         .sort(([_, a], [__, b]) => b.spent - a.spent)
-        .map(
-          ([id, { spent }]) =>
-            `\\- <@${id}>: **$${spent.toFixed(3)}** ${
-              spent >=
-              (this.guild.members.cache.get(id).roles.cache.has('986727860368707594')
-                ? supporterUsageLimit
-                : userUsageLimit)
-                ? '(`⛔`)'
-                : spent >= firstUserUsageWarning
-                ? '(`⚠️`)'
-                : ''
-            }`,
-        )
+        .map(([id, { spent }]) => {
+          const isSupported = this.guild.members.cache.get(id).roles.cache.has(supporterRoleId);
+
+          return `\\- <@${id}>${isSupported ? '`💦` ' : ''} **${emojis.hydrollar} ${Math.ceil(
+            spent * 100,
+          )}** ${
+            spent >= (isSupported ? supporterUsageLimit : userUsageLimit)
+              ? '(`⛔`)'
+              : spent >= firstUserUsageWarning
+              ? '(`⚠️`)'
+              : ''
+          }`;
+        })
         .join('\n')}
         
-      Note: a message costs ~$${averageUsageCost} to generate, based on token usage.
+      Note: a message uses about ${emojis.hydrollar} ${
+        averageUsageCost * 100
+      } to generate, based on length.
       Note 2: user usage is calculated since ${timestampMention(new Date('2023-09-24T21:40:00'))}.
         `,
     });
