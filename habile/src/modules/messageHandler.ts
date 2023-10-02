@@ -41,6 +41,19 @@ export default OnEvent('messageCreate', async (msg) => {
 
   let warning: string;
 
+  if (currentUsage.used >= firstGlobalUsageWarning) {
+    warning = '`⚠️` 2/3 of global usage used. Consider donating?';
+  }
+  if (currentUsage.used >= secondGlobalUsageWarning) {
+    warning = '`⚠️` 3/4 of global usage used. Consider donating?';
+  }
+  if (currentUsage.used >= globalUsageLimit) {
+    botReply.edit(
+      "`⛔` We have collectively used most of our global usage. Until anyone donates ([Ko-fi](https://ko-fi.com/clembs) or [Boosty](https://boosty.to/clembs)), I cannot communicate with GPT 4 (it's not free!).",
+    );
+    return;
+  }
+
   const userLimit = msg.member.roles.cache.has(supporterRoleId)
     ? supporterUsageLimit
     : userUsageLimit;
@@ -56,21 +69,6 @@ export default OnEvent('messageCreate', async (msg) => {
       } of usage. Consider donating?`,
     );
 
-    return;
-  }
-
-  if (currentUsage.used >= firstGlobalUsageWarning) {
-    warning =
-      '`⚠️` We have collectively used more than half of our global usage. Consider donating?';
-  }
-  if (currentUsage.used >= secondGlobalUsageWarning) {
-    warning =
-      '`⚠️` We have collectively used more than 3/4 of our global usage. Consider donating?';
-  }
-  if (currentUsage.used >= globalUsageLimit) {
-    botReply.edit(
-      "`⛔` We have collectively used most of our global usage. Until anyone donates ([Ko-fi](https://ko-fi.com/clembs) or [Boosty](https://boosty.to/clembs)), I cannot communicate with GPT 4 (it's not free!).",
-    );
     return;
   }
 
