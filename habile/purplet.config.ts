@@ -9,6 +9,10 @@ import 'dotenv/config';
 
 export default defineConfig({
   compiler: {
+    alias: {
+      $lib: './src/lib',
+      '$lib/*': './src/lib/*',
+    },
     esbuildOptions: {
       minify: true,
       minifyWhitespace: true,

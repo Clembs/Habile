@@ -1,9 +1,9 @@
-import { TextChannel } from 'discord.js';
 import { OnEvent } from 'purplet';
+import 'dotenv/config';
 
 export default OnEvent('ready', async (client) => {
   const channelId = '1155549814705111050';
-  const channel = await client.channels.fetch(channelId);
+  const channel = (await client.channels.fetch(channelId))!;
 
   client.user.setActivity({
     name: 'DOOM',
