@@ -9,9 +9,12 @@ export default ChatCommand({
     required: true,
   }),
   async handle({ code }) {
+    await this.deferReply();
+
     const headers = new Headers();
     headers.set('Authorization', process.env.HABILE_SECRET!);
     headers.set('X-User-Id', this.user.id);
+
     const req = await fetch(`${API_BASE_URL}/link`, {
       method: 'POST',
       headers,
@@ -20,14 +23,17 @@ export default ChatCommand({
       }),
     });
 
-    if (req.status === 200) {
-      this.reply({
-        content: `Successfully linked your Discord profile to your clembs.com account.\nRefresh the Dashboard page to see your usage and more!`,
+    if (!req.ok) {
+      const res = (await req.json())! as { message: string };
+
+      return this.editReply({
+        content: res.message,
       });
-    } else {
-      this.reply({
-        content:
-          'Failed to link your Discord profile to your clembs.com account. Please try again.',
+    }
+
+    if (req.status === 200) {
+      return this.editReply({
+        content: `Successfully linked your Discord profile to your clembs.com account.\nRefresh the Dashboard page to see your usage and more!`,
       });
     }
   },

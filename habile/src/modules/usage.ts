@@ -1,6 +1,5 @@
 import dedent from 'dedent';
 import { ChatCommand, components, row } from 'purplet';
-import { averageUsageCost } from '../lib/usageLimits';
 import { emojis } from '../lib/emojis';
 import { Headers, fetch } from 'undici';
 import { API_BASE_URL } from '../lib/url';
@@ -12,6 +11,10 @@ export default ChatCommand({
   name: 'usage',
   description: 'View your Habile Chat balance and some stats.',
   async handle() {
+    await this.deferReply({
+      ephemeral: true,
+    });
+
     const headers = new Headers();
     headers.set('Authorization', process.env.HABILE_SECRET!);
     headers.set('X-User-Id', this.user.id);
@@ -22,7 +25,7 @@ export default ChatCommand({
     });
 
     if (!req.ok) {
-      return this.reply({
+      return this.editReply({
         content:
           'Failed to get your clembs.com account info. Have you signed in and linked your account?',
         components: components(
@@ -30,10 +33,9 @@ export default ChatCommand({
             type: 'BUTTON',
             style: 'LINK',
             label: 'Sign in',
-            url: 'https://dev.clembs.com',
+            url: 'https://dev.clembs.com/account',
           }),
         ),
-        ephemeral: true,
       });
     }
 
@@ -44,7 +46,7 @@ export default ChatCommand({
     const tokensRemaining = tokensTotal - tokensUsed;
     const averageMessagesRemaining = Math.floor(tokensRemaining / averageUsageCost / 100);
 
-    this.reply({
+    await this.editReply({
       content: dedent`
       # ${emojis.habileHappy} Habile Chat - Mini-dashboard
 
@@ -80,7 +82,6 @@ export default ChatCommand({
           },
         ),
       ),
-      ephemeral: true,
     });
   },
 });
