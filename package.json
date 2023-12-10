@@ -1,53 +1,9 @@
 {
-  "name": "habile-discord",
-  "description": "Assistant Discord bot for the Clembs Server, build for Cloudflare Workers.",
-  "version": "1.2.0",
+  "name": "habile-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Monorepo for Habile",
   "license": "MIT",
-  "author": {
-    "name": "Clembs",
-    "email": "clembs@clembs.com",
-    "url": "https://github.com/Clembs"
-  },
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "commands": "esbuild src/core/register-commands.ts --bundle --outfile=dist/commands.js --format=esm --external:dotenv --platform=node && node dist/commands",
-    "dev": "yarn commands && rollup -c --watch",
-    "build": "rollup -c",
-    "preview": "wrangler dev",
-    "deploy": "yarn commands && rollup -c && wrangler publish"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^3.18.0",
-    "@paperdave/utils": "^1.5.0",
-    "@purplet/polyfill": "^1.2.1",
-    "@purplet/rest": "^1.2.0",
-    "@purplet/serialize": "^2.0.0",
-    "@purplet/utils": "^1.0.0",
-    "@rollup/plugin-alias": "^4.0.2",
-    "@rollup/plugin-commonjs": "^23.0.2",
-    "@rollup/plugin-json": "^5.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@types/dedent": "^0.7.0",
-    "@types/node": "^18.11.8",
-    "dedent": "^0.7.0",
-    "discord-api-types": "^0.37.16",
-    "discord-interactions": "^3.2.0",
-    "dotenv": "^16.0.3",
-    "esbuild": "^0.15.12",
-    "export-directory": "^0.1.0",
-    "node-fetch": "^3.2.10",
-    "prettier": "^2.7.1",
-    "prettier-plugin-jsdoc": "^0.4.2",
-    "prettier-plugin-organize-imports": "^3.1.1",
-    "rollup": "^3.2.3",
-    "rollup-plugin-esbuild": "^4.10.1",
-    "typescript": "^4.9.5",
-    "wrangler": "^2.6.0"
-  },
-  "dependencies": {
-    "@discordjs/core": "^1.0.1",
-    "@discordjs/rest": "^2.0.1",
-    "@discordjs/ws": "^1.0.1"
-  }
+  "author": "Clément Voisin <clembs@clembs.com",
+  "type": "module"
 }

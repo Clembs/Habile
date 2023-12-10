@@ -1,8 +1,0 @@
-name = "habile"
-compatibility_date = "2022-10-31"
-main = "dist/index.js"
-send_metrics = false
-
-[vars]
-PUBLIC_KEY = "495efd05339644dd9c17b390b97f88d587769e3c6b6e8592e6223fa59cdd530e"
-APPLICATION_ID = "778668852607058020"
