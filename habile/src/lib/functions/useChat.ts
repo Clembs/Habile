@@ -6,12 +6,13 @@ import { getUserData } from './getUserData';
 import { eq } from 'drizzle-orm';
 import { habileChatData, users } from '../db/schema';
 import OpenAI from 'openai';
+import { generateKnowledge } from './generateKnowledge';
 
 export async function useChat(userMsg: Message, botReply: Message, content: string) {
   const globalData = await getGlobalData();
   const userData = await getUserData(userMsg.author.id);
 
-  if (globalData.tokens <= 0) {
+  if (globalData.used >= globalData.tokens) {
     throw new Error('no tokens');
   }
 
@@ -25,7 +26,7 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
   if (userData.knowledge) {
     messages.push({
       role: 'system',
-      content: `Your knowledge about ${userMsg.author.username}: ${userData.knowledge}`,
+      content: `About ${userMsg.author.username}: ${userData.knowledge}`,
     });
   }
 
@@ -33,15 +34,14 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
     userData.lastMessages.forEach(({ content, userId }) => {
       messages.push({
         role: !userId || userId === userId ? 'user' : 'assistant',
-        content:
-          !userId || userId === userId ? `[${userMsg.author.username}]: ${content}` : content,
+        content: !userId || userId === userId ? `${userMsg.author.username}: ${content}` : content,
       });
     });
   }
 
   messages.push({
     role: 'user',
-    content: `[${userMsg.author.username}]: ${content}`,
+    content: `${userMsg.author.username}: ${content}`,
   });
 
   const openai = new OpenAI();
@@ -58,14 +58,26 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
   });
   console.timeEnd('completion');
 
-  const totalCompletionsPrice =
+  let totalCompletionsPrice =
     ((completion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
     ((completion.usage?.completion_tokens || 0) / 1000) * 0.03;
 
-  // TODO: generate knowledge
+  let knowledgeCompletion: OpenAI.Chat.Completions.ChatCompletion | undefined = undefined;
+
+  if (userData.messagesSent > 0 && userData.messagesSent % 5 === 0) {
+    knowledgeCompletion = await generateKnowledge(userMsg.author, messages);
+    totalCompletionsPrice +=
+      ((knowledgeCompletion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
+      ((knowledgeCompletion.usage?.completion_tokens || 0) / 1000) * 0.03;
+  }
+
+  completion.choices[0].message.content =
+    completion.choices[0].message.content?.replace(
+      `${userMsg.author.username.toLowerCase()}:`,
+      '',
+    ) || '';
 
   await db.update(habileChatData).set({
-    tokens: globalData.tokens - totalCompletionsPrice,
     messages: globalData.messages + 1,
     used: globalData.used + totalCompletionsPrice,
   });
@@ -77,6 +89,7 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
       id: userMsg.author.id,
       used: userData.used + totalCompletionsPrice,
       messagesSent: userData.messagesSent + 1,
+      knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
       lastMessages: [
         {
           id: userMsg.id,
@@ -94,6 +107,7 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
       set: {
         used: userData.used + totalCompletionsPrice,
         messagesSent: userData.messagesSent + 1,
+        knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
         lastMessages: [
           ...(userData.lastMessages || []).slice(-4),
           {
