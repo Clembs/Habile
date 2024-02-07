@@ -15,7 +15,12 @@ export default OnEvent('messageCreate', async (msg) => {
   const botReply = await msg.reply('*gimme some time to think...*');
 
   try {
-    const { completion } = await useChat(msg, botReply, contentWithoutPing);
+    const { completion } = await useChat(
+      msg,
+      botReply,
+      contentWithoutPing,
+      freeTalkingChannels.includes(msg.channelId) ? 'personal' : 'global',
+    );
 
     if (completion) {
       botReply.edit(completion.choices[0].message.content!);
@@ -23,7 +28,7 @@ export default OnEvent('messageCreate', async (msg) => {
   } catch (e) {
     if (e.message === 'no tokens') {
       botReply.edit(
-        'we ran out of money meaning i can no longer talk :(... ([donate](https://clembs.com/donate) if you can!)',
+        'we ran out of money meaning i can no longer talk :( ([donate](https://clembs.com/donate) if you can!)',
       );
       return;
     }

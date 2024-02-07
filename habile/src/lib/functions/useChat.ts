@@ -8,7 +8,14 @@ import { habileChatData, users } from '../db/schema';
 import OpenAI from 'openai';
 import { generateKnowledge } from './generateKnowledge';
 
-export async function useChat(userMsg: Message, botReply: Message, content: string) {
+export async function useChat(
+  userMsg: Message,
+  botReply: Message,
+  content: string,
+  // global uses the 5 past messages of the current channel from all users
+  // personal uses using the user's last few messages with habile (for use in free talking channels)
+  mode: 'global' | 'personal',
+) {
   const globalData = await getGlobalData();
   const userData = await getUserData(userMsg.author.id);
 
@@ -30,7 +37,16 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
     });
   }
 
-  if (userData.lastMessages?.length) {
+  if (mode === 'global') {
+    const lastMessages = await userMsg.channel.messages.fetch({ limit: 8, before: userMsg.id });
+
+    lastMessages.forEach((msg) => {
+      messages.push({
+        role: msg.author.id === userMsg.author.id ? 'user' : 'assistant',
+        content: `${msg.author.username}: ${msg.content}`,
+      });
+    });
+  } else if (mode === 'personal' && userData.lastMessages?.length) {
     userData.lastMessages.forEach(({ content, userId }) => {
       messages.push({
         role: !userId || userId === userId ? 'user' : 'assistant',
@@ -44,19 +60,24 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
     content: `${userMsg.author.username}: ${content}`,
   });
 
+  let completion: OpenAI.Chat.Completions.ChatCompletion;
   const openai = new OpenAI();
 
-  console.time('completion');
-  const completion = await openai.chat.completions.create({
-    messages,
-    model: 'gpt-4-turbo-preview',
-    max_tokens: 256,
-    temperature: 0.8,
-    user: userMsg.author.id,
-    n: 1,
-    // retry: 0,
-  });
-  console.timeEnd('completion');
+  try {
+    console.time(`completion:${botReply.id}`);
+    completion = await openai.chat.completions.create({
+      messages,
+      model: 'gpt-4-turbo-preview',
+      max_tokens: 256,
+      temperature: 0.8,
+      user: userMsg.author.id,
+      n: 1,
+      // retry: 0,
+    });
+    console.timeEnd(`completion:${botReply.id}`);
+  } catch (e) {
+    throw new Error('no tokens');
+  }
 
   let totalCompletionsPrice =
     ((completion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
@@ -72,10 +93,7 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
   }
 
   completion.choices[0].message.content =
-    completion.choices[0].message.content?.replace(
-      `${userMsg.author.username.toLowerCase()}:`,
-      '',
-    ) || '';
+    completion.choices[0].message.content?.replace(`${userMsg.author.username}:`, '') || '';
 
   await db.update(habileChatData).set({
     messages: globalData.messages + 1,
@@ -90,37 +108,45 @@ export async function useChat(userMsg: Message, botReply: Message, content: stri
       used: userData.used + totalCompletionsPrice,
       messagesSent: userData.messagesSent + 1,
       knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
-      lastMessages: [
-        {
-          id: userMsg.id,
-          content,
-          userId: userMsg.author.id,
-        },
-        {
-          id: botReply.id,
-          content: completion.choices[0].message.content!,
-          userId: 'habile',
-        },
-      ],
+      ...(mode === 'personal'
+        ? {
+            lastMessages: [
+              {
+                id: userMsg.id,
+                content,
+                userId: userMsg.author.id,
+              },
+              {
+                id: botReply.id,
+                content: completion.choices[0].message.content!,
+                userId: 'habile',
+              },
+            ],
+          }
+        : {}),
     })
     .onConflictDoUpdate({
       set: {
         used: userData.used + totalCompletionsPrice,
         messagesSent: userData.messagesSent + 1,
         knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
-        lastMessages: [
-          ...(userData.lastMessages || []).slice(-4),
-          {
-            id: userMsg.id,
-            content,
-            userId: userMsg.author.id,
-          },
-          {
-            id: botReply.id,
-            content: completion.choices[0].message.content!,
-            userId: 'habile',
-          },
-        ],
+        ...(mode === 'personal'
+          ? {
+              lastMessages: [
+                ...(userData.lastMessages || []).slice(-4),
+                {
+                  id: userMsg.id,
+                  content,
+                  userId: userMsg.author.id,
+                },
+                {
+                  id: botReply.id,
+                  content: completion.choices[0].message.content!,
+                  userId: 'habile',
+                },
+              ],
+            }
+          : {}),
       },
       where: eq(users.id, userMsg.author.id),
       target: [users.id],
