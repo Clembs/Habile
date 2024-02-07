@@ -1,5 +1,6 @@
 import { OnEvent } from 'purplet';
 import { useChat } from '../lib/functions/useChat';
+import { freeTalkingChannels } from '../lib/constants';
 
 export default OnEvent('messageCreate', async (msg) => {
   const ping = `<@${msg.client.user?.id}>`;
@@ -7,7 +8,9 @@ export default OnEvent('messageCreate', async (msg) => {
 
   if (!contentWithoutPing) return;
   if (msg.author.id === msg.client.user?.id) return;
-  if (!msg.mentions.has(msg.client.user!)) return;
+  if (!freeTalkingChannels.includes(msg.channelId) && !msg.mentions.has(msg.client.user!)) return;
+  if (freeTalkingChannels.includes(msg.channelId) && msg.content.startsWith('!')) return;
+  if (msg.content.includes(`${ping}.`)) return;
 
   const botReply = await msg.reply('*gimme some time to think...*');
 
