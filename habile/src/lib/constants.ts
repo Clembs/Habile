@@ -16,6 +16,56 @@ export const emojis = {
   habileNeutral: '<:habile_neutral:1137775117519302809>',
 };
 
+export const colorRoles: Array<{
+  name: string;
+  id: string;
+}> = [
+  {
+    name: 'Crimson',
+    id: '967853831159435354',
+  },
+  {
+    name: 'Citrus',
+    id: '967853915716603954',
+  },
+  {
+    name: 'Gold',
+    id: '967854014001717248',
+  },
+  {
+    name: 'Grass',
+    id: '967854051654000690',
+  },
+  {
+    name: 'Jade',
+    id: '967856055939911681',
+  },
+  {
+    name: 'Sky',
+    id: '967856538498773052',
+  },
+  {
+    name: 'Azure',
+    id: '984522178391339138',
+  },
+  {
+    name: 'Night',
+    id: '1176171427787964497',
+  },
+  {
+    name: 'Clemble',
+    id: '925392156166856734',
+  },
+  {
+    name: 'Sakura',
+    id: '967858274928054322',
+  },
+  {
+    name: 'Titanium',
+    id: '1152287703728140430',
+  },
+];
+
 export const supporterRoleId = '986727860368707594';
 
 export const messagePrompt = `Today's ${new Date().toUTCString()}.
