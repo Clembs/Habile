@@ -39,6 +39,8 @@ export default OnEvent('messageCreate', async (msg) => {
 
     if (completion) {
       botReply.edit(completion.choices[0].message.content!);
+    } else {
+      botReply.delete();
     }
   } catch (e) {
     if (e.message === 'no tokens') {
