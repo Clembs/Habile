@@ -26,11 +26,11 @@ export async function useChat(
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     {
       role: 'system',
-      content: generalPrompt,
+      content: generalPrompt(userMsg.author.username),
     },
     {
       role: 'user',
-      content: chatPrompt(userMsg.author.username),
+      content: chatPrompt,
     },
   ];
 
@@ -44,8 +44,6 @@ export async function useChat(
   await Promise.all(
     userMsg.mentions.users.map(async (user) => {
       const mentionedUserData = await getUserData(user.id);
-
-      console.log({ knowledge: mentionedUserData.knowledge });
 
       if (mentionedUserData.knowledge) {
         messages.push({
@@ -63,8 +61,6 @@ export async function useChat(
     !!referencedMessage &&
     (referencedMessage.author.id !== userMsg.author.id ||
       referencedMessage.author.id === botReply.author.id);
-
-  console.log({ hasAnotherUserInThread });
 
   if (referencedMessage && referencedMessage.author.id !== botReply.author.id) {
     messages.push({
