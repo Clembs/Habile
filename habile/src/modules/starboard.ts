@@ -10,7 +10,7 @@ import {
   User,
 } from 'discord.js';
 
-const MIN_REACTIONS = 2;
+const MIN_REACTIONS = 3;
 const REACTION_EMOJI = '⭐';
 
 export const onAddStarboardReaction = OnEvent('messageReactionAdd', async (reaction, user) => {
@@ -18,6 +18,8 @@ export const onAddStarboardReaction = OnEvent('messageReactionAdd', async (react
 
   // if the message author is reacting to themselves, ignore it
   if (reaction.message.author?.id === user.id) return;
+  // if the message is in an age-restricted channel, ignore it
+  if ((reaction.message.channel as BaseGuildTextChannel).nsfw) return;
   // if the reaction isn't the starboard emoji, ignore it
   if (reaction.emoji.name !== REACTION_EMOJI) return;
   // if there's not enough reactions, ignore it
