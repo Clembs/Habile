@@ -9,7 +9,7 @@ export async function generateKnowledge(
 
   messages.push({
     role: 'system',
-    content: `Based on your knowledge and the past messages, what's your opinion of ${user.username}? Summarize what you know about them.`,
+    content: `Based on the past information, summarize this conversation and key points about ${user.username}.`,
   });
 
   const completion = await openai.chat.completions.create({
