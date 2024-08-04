@@ -38,7 +38,7 @@ export default OnEvent('messageCreate', async (msg) => {
     );
 
     if (completion) {
-      botReply.edit(completion.choices[0].message.content!);
+      botReply.edit(completion.message.content);
     } else {
       botReply.delete();
     }

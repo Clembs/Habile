@@ -1,79 +1,78 @@
 import { SnowflakeUtil, type Message } from 'discord.js';
-import { getGlobalData } from './getGlobalData';
 import { chatPrompt, generalPrompt } from '../constants';
 import { db } from '../db';
 import { getUserData } from './getUserData';
 import { eq } from 'drizzle-orm';
-import { habileChatData, users } from '../db/schema';
-import OpenAI from 'openai';
-import { generateKnowledge } from './generateKnowledge';
+import { users } from '../db/schema';
+import { Chatter, ChatterMessage, CompletionResponse } from './Chatter';
+// import { generateKnowledge } from './generateKnowledge';
 
 export async function useChat(
   userMsg: Message,
   botReply: Message,
   content: string,
-  // global uses the 5 past messages of the current channel from all users
+  // global uses the 10 past messages of the current channel from all users
   // personal uses using the user's last few messages with habile (for use in free talking channels)
   mode: 'global' | 'personal',
 ) {
-  const globalData = await getGlobalData();
-  const userData = await getUserData(userMsg.author.id);
+  const user = userMsg.author;
+  const bot = userMsg.client.user!;
 
-  if (globalData.used >= globalData.tokens) {
-    throw new Error('no tokens');
-  }
+  const userData = await getUserData(user.id);
 
-  const messages: OpenAI.ChatCompletionMessageParam[] = [
+  const messages: ChatterMessage[] = [
     {
       role: 'system',
-      content: generalPrompt(userMsg.author.username),
+      content: generalPrompt(user.username),
     },
     {
-      role: 'user',
+      role: 'system',
       content: chatPrompt,
     },
   ];
 
-  if (userData.knowledge) {
-    messages.push({
-      role: 'system',
-      content: `About ${userMsg.author.username}: ${userData.knowledge}`,
-    });
-  }
+  // if (userData.knowledge) {
+  //   messages.push({
+  //     role: 'system',
+  //     content: `About ${userMsg.author.username}: ${userData.knowledge}`,
+  //   });
+  // }
 
-  await Promise.all(
-    userMsg.mentions.users.map(async (user) => {
-      const mentionedUserData = await getUserData(user.id);
+  // await Promise.all(
+  //   userMsg.mentions.users.map(async (user) => {
+  //     const mentionedUserData = await getUserData(user.id);
 
-      if (mentionedUserData.knowledge) {
-        messages.push({
-          role: 'system',
-          content: `About ${user.username}: ${mentionedUserData.knowledge}`,
-        });
-      }
-    }),
-  );
+  //     if (mentionedUserData.knowledge) {
+  //       messages.push({
+  //         role: 'system',
+  //         content: `About ${user.username}: ${mentionedUserData.knowledge}`,
+  //       });
+  //     }
+  //   }),
+  // );
 
-  const referencedMessage =
-    userMsg.reference?.messageId &&
-    (await userMsg.channel.messages.fetch(userMsg.reference.messageId));
-  const hasAnotherUserInThread =
-    !!referencedMessage &&
-    (referencedMessage.author.id !== userMsg.author.id ||
-      referencedMessage.author.id === botReply.author.id);
+  // const referencedMessage =
+  //   userMsg.reference?.messageId &&
+  //   (await userMsg.channel.messages.fetch(userMsg.reference.messageId));
+  // const hasAnotherUserInThread =
+  //   !!referencedMessage &&
+  //   (referencedMessage.author.id !== userMsg.author.id ||
+  //     referencedMessage.author.id === botReply.author.id);
 
-  if (referencedMessage && referencedMessage.author.id !== botReply.author.id) {
-    messages.push({
-      role: 'system',
-      content: `${referencedMessage.author.username}: ${referencedMessage.content}`,
-    });
-  } else if (mode === 'global') {
-    // get the last 8 messages before the user's message
-    const lastMessages = await userMsg.channel.messages.fetch({ limit: 8, before: userMsg.id });
+  // if (referencedMessage && referencedMessage.author.id !== botReply.author.id) {
+  //   messages.push({
+  //     role: 'system',
+  //     content: `${referencedMessage.author.username}: ${referencedMessage.content}`,
+  //   });
+  // } else
 
-    lastMessages.forEach((msg) => {
+  if (mode === 'global') {
+    // get the last 10 messages before the user's message
+    const lastMessages = await userMsg.channel.messages.fetch({ limit: 10, before: userMsg.id });
+
+    lastMessages.reverse().forEach((msg) => {
       messages.push({
-        role: msg.author.id === botReply.author.id ? 'user' : 'assistant',
+        role: msg.author.id === bot.id ? 'system' : 'user',
         content: `${msg.author.username}: ${msg.content}`,
       });
     });
@@ -89,8 +88,7 @@ export async function useChat(
         content:
           // if the discussion is only between the user and habile, we don't need to show the user's name
           // otherwise, include it so we know who's talking
-          (hasAnotherUserInThread ? `${isHabile ? 'Habile' : messageAuthor?.username}: ` : '') +
-          content,
+          `${isHabile ? 'Habile' : messageAuthor?.username}: ${content}`,
       });
     });
   }
@@ -98,71 +96,62 @@ export async function useChat(
   messages.push({
     role: 'user',
     content:
-      (mode === 'global' || referencedMessage ? `${userMsg.author.username}: ` : '') +
-      userMsg.cleanContent +
+      `${user.username}: ` +
+      userMsg.cleanContent.replace('@​Habile ', '') +
       userMsg.attachments.map((a) => ` [${a.contentType?.split('/')[0]}]`).join(''),
   });
 
-  console.log(messages.slice(3));
+  console.log(userMsg.cleanContent.replace('@​Habile ', ''));
+  console.log(messages);
 
-  let completion: OpenAI.Chat.Completions.ChatCompletion;
-  const openai = new OpenAI();
+  let completion: CompletionResponse;
+  // const openai = new OpenAI();
+  const chatter = new Chatter('Habile');
 
-  try {
-    console.time(`completion:${botReply.id}`);
-    completion = await openai.chat.completions.create({
-      messages,
-      model: 'gpt-4-turbo-preview',
-      max_tokens: 256,
-      temperature: 0.8,
-      user: userMsg.author.id,
-      n: 1,
-      // retry: 0,
-    });
-    console.timeEnd(`completion:${botReply.id}`);
-  } catch (e) {
-    throw new Error('no tokens');
-  }
+  console.time(`completion:${botReply.id}`);
+  completion = await chatter.generateCompletion({ messages });
+  console.timeEnd(`completion:${botReply.id}`);
 
-  const avoidReplying = completion.choices[0].message.content?.toUpperCase()?.includes('NO REPLY');
+  const avoidReplying = completion.message.content.toUpperCase() === 'NO REPLY';
 
-  let totalCompletionsPrice =
-    ((completion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
-    ((completion.usage?.completion_tokens || 0) / 1000) * 0.03;
+  let totalTokensUsed = completion.prompt_eval_count + completion.eval_count;
 
-  let knowledgeCompletion: OpenAI.Chat.Completions.ChatCompletion | undefined = undefined;
+  // ((completion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
+  // ((completion.usage?.completion_tokens || 0) / 1000) * 0.03;
 
-  if (userData.messagesSent > 0 && userData.messagesSent % 5 === 0) {
-    knowledgeCompletion = await generateKnowledge(userMsg.author, [
-      // remove the chat prompt
-      messages[0],
-      ...messages.slice(2),
-    ]);
-    totalCompletionsPrice +=
-      ((knowledgeCompletion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
-      ((knowledgeCompletion.usage?.completion_tokens || 0) / 1000) * 0.03;
-  }
+  // let knowledgeCompletion: OpenAI.Chat.Completions.ChatCompletion | undefined = undefined;
 
-  completion.choices[0].message.content =
-    completion.choices[0].message.content?.replace(
+  // if (userData.messagesSent > 0 && userData.messagesSent % 5 === 0) {
+  //   knowledgeCompletion = await generateKnowledge(userMsg.author, [
+  //     // remove the chat prompt
+  //     messages[0],
+  //     ...messages.slice(2),
+  //   ]);
+  //   totalCompletionsPrice +=
+  //     ((knowledgeCompletion.usage?.prompt_tokens || 0) / 1000) * 0.01 +
+  //     ((knowledgeCompletion.usage?.completion_tokens || 0) / 1000) * 0.03;
+  // }
+
+  completion.message.content =
+    completion.message.content.replace(
       // replace either the user's name or habile's name with an empty string
       new RegExp(`(${userMsg.author.username}|Habile):`, 'i'),
       '',
     ) || '';
 
-  await db.update(habileChatData).set({
-    messages: globalData.messages + 1,
-    used: globalData.used + totalCompletionsPrice,
-  });
+  // await db.update(habileChatData).set({
+  //   messages: globalData.messages + 1,
+  //   used: globalData.used + totalCompletionsPrice,
+  // });
 
   const [newUserData] = await db
     .insert(users)
     .values({
       // ...userData,
       id: userMsg.author.id,
-      used: userData.used + totalCompletionsPrice,
+      tokensUsed: userData.tokensUsed + totalTokensUsed,
       messagesSent: userData.messagesSent + 1,
-      knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
+      // knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
       ...(mode === 'personal' && !avoidReplying
         ? {
             lastMessages: [
@@ -173,7 +162,7 @@ export async function useChat(
               },
               {
                 id: botReply.id,
-                content: completion.choices[0].message.content!,
+                content: completion.message.content,
                 userId: 'habile',
               },
             ],
@@ -182,9 +171,9 @@ export async function useChat(
     })
     .onConflictDoUpdate({
       set: {
-        used: userData.used + totalCompletionsPrice,
+        tokensUsed: userData.tokensUsed + totalTokensUsed,
         messagesSent: userData.messagesSent + 1,
-        knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
+        // knowledge: knowledgeCompletion?.choices[0].message.content || userData.knowledge,
         ...(mode === 'personal' && !avoidReplying
           ? {
               lastMessages: [
@@ -196,7 +185,7 @@ export async function useChat(
                 },
                 {
                   id: botReply.id,
-                  content: completion.choices[0].message.content!,
+                  content: completion.message.content,
                   userId: 'habile',
                 },
               ],
