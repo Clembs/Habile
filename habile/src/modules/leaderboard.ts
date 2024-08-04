@@ -6,18 +6,18 @@ export const leaderboard = ChatCommand({
   description: 'show who cost clembs the most lol',
   async handle() {
     const allMembers = await db.query.users.findMany({
-      orderBy: ({ used }, { desc }) => desc(used),
+      orderBy: ({ tokensUsed }, { desc }) => desc(tokensUsed),
       limit: 10,
       columns: {
         id: true,
-        used: true,
+        tokensUsed: true,
         messagesSent: true,
       },
     });
 
     const leaderboard = allMembers.map(
-      ({ id, used, messagesSent }, index) =>
-        `${index + 1}. <@${id}>: $${used} - ${messagesSent} msgs`,
+      ({ id, tokensUsed, messagesSent }, index) =>
+        `${index + 1}. <@${id}>: ${tokensUsed} tokens - ${messagesSent} msgs`,
     );
 
     await this.reply({

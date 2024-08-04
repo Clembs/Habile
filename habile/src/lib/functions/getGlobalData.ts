@@ -1,11 +1,16 @@
 import { db } from '../db';
-import { habileChatData } from '../db/schema';
 
-export async function getGlobalData(): Promise<typeof habileChatData.$inferSelect> {
-  return {
-    tokens: 0,
-    used: 0,
-    messages: 0,
-    ...(await db.query.habileChatData.findFirst()),
-  };
+export async function getGlobalData() {
+  // group all user data into one object
+  const allUserData = await db.query.users.findMany();
+  const allUserDataGrouped = allUserData.reduce(
+    (acc, curr) => {
+      acc.tokensUsed += curr.tokensUsed;
+      acc.messagesSent += curr.messagesSent;
+      return acc;
+    },
+    { tokensUsed: 0, messagesSent: 0 },
+  );
+
+  return allUserDataGrouped;
 }
