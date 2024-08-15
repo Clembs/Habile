@@ -1,5 +1,6 @@
 import { ChatCommand, OptionBuilder } from 'purplet';
 import { colorRoles, emojis } from '../lib/constants';
+import { GuildMember } from 'discord.js';
 
 export const color = ChatCommand({
   name: 'color',
@@ -19,28 +20,19 @@ export const color = ChatCommand({
       ephemeral: true,
     });
 
-    if (
-      !color ||
-      !colorRoles.some(({ id, name }) => name.toLowerCase() === color.toLowerCase() || id === color)
-    ) {
-      this.editReply({
-        content: "this color doesn't exist... try again and choose a color from the suggestions :3",
-      });
-      return;
-    }
-
-    const role = await this.guild?.roles.fetch(color);
-    const member = await this.guild?.members.fetch(this.user.id);
+    const member = this.member as GuildMember;
+    const currentColorRole = colorRoles.find(({ id }) => member.roles.cache.has(id));
+    const newColorRole = (await this.guild?.roles.fetch(color!))!;
 
     // remove all color roles
-    await member?.roles.remove(
-      colorRoles.map(({ id }) => id).filter((id) => member?.roles.cache.has(id)),
-    );
+    if (currentColorRole) {
+      await member.roles.remove(currentColorRole.id);
+    }
     // add the selected color role
-    await member?.roles.add(role!);
+    await member.roles.add(newColorRole);
 
     await this.editReply({
-      content: `your name is now **${role?.name?.toLowerCase()}**! ${emojis.habileHappy}`,
+      content: `your name is now colored in **${newColorRole?.name?.toLowerCase()}**! ${emojis.habileHappy}`,
     });
   },
 });
