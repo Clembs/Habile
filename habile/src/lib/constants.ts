@@ -16,50 +16,62 @@ export const starboardChannelId = '978954703377399828';
 export const colorRoles: Array<{
   name: string;
   id: string;
+  hex: string;
 }> = [
   {
-    name: 'Crimson',
-    id: '967853831159435354',
+    name: 'coral',
+    id: '1266487233830195332',
+    hex: '#eb565b',
   },
   {
-    name: 'Citrus',
-    id: '967853915716603954',
+    name: 'sienna',
+    id: '1266487247621062777',
+    hex: '#d47c42',
   },
   {
-    name: 'Gold',
-    id: '967854014001717248',
+    name: 'mustard',
+    id: '1266487251148472362',
+    hex: '#b09227',
   },
   {
-    name: 'Grass',
-    id: '967854051654000690',
+    name: 'mint',
+    id: '1266487251618234391',
+    hex: '#2c9b7c',
   },
   {
-    name: 'Jade',
-    id: '967856055939911681',
+    name: 'caribbean',
+    id: '1266479141415292928',
+    hex: '#0096a3',
   },
   {
-    name: 'Sky',
-    id: '967856538498773052',
+    name: 'moonstone',
+    id: '1266487252650033223',
+    hex: '#4990ab',
   },
   {
-    name: 'Azure',
-    id: '984522178391339138',
+    name: 'cornflower',
+    id: '1266505024469598258',
+    hex: '#5987d9',
   },
   {
-    name: 'Night',
-    id: '1176171427787964497',
+    name: 'lavender',
+    id: '1266487253341962251',
+    hex: '#8880bc',
   },
   {
-    name: 'Clemble',
-    id: '925392156166856734',
+    name: 'amethyst',
+    id: '1266487507894403092',
+    hex: '#b566d3',
   },
   {
-    name: 'Sakura',
-    id: '967858274928054322',
+    name: 'fuschia',
+    id: '1266487507894403092',
+    hex: '#eb5e94',
   },
   {
-    name: 'Titanium',
-    id: '1152287703728140430',
+    name: 'silver',
+    id: '1266487512121999473',
+    hex: '#83878a',
   },
 ];
 

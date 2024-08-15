@@ -6,23 +6,25 @@ export const color = ChatCommand({
   description: 'change your name color to a different one!',
   options: new OptionBuilder().string('color', 'your new username color', {
     required: true,
-    autocomplete({ color }) {
-      return colorRoles
-        .filter(({ name }) => name.toLowerCase().includes(color.toLowerCase()))
-        .map(({ name, id }) => ({
-          name,
-          value: id,
-        }));
-    },
+    choices: colorRoles.reduce(
+      (acc, cur) => ({
+        ...acc,
+        [cur.id]: cur.name,
+      }),
+      {},
+    ),
   }),
   async handle({ color }) {
+    await this.deferReply({
+      ephemeral: true,
+    });
+
     if (
       !color ||
       !colorRoles.some(({ id, name }) => name.toLowerCase() === color.toLowerCase() || id === color)
     ) {
-      this.reply({
+      this.editReply({
         content: "this color doesn't exist... try again and choose a color from the suggestions :3",
-        ephemeral: true,
       });
       return;
     }
@@ -37,9 +39,8 @@ export const color = ChatCommand({
     // add the selected color role
     await member?.roles.add(role!);
 
-    await this.reply({
+    await this.editReply({
       content: `your name is now **${role?.name?.toLowerCase()}**! ${emojis.habileHappy}`,
-      ephemeral: true,
     });
   },
 });
