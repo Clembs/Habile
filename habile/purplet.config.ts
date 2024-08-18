@@ -1,6 +1,7 @@
 import { Intents } from 'discord.js';
 import { ChatCommandHandler, defineConfig, TextCommandHandler } from 'purplet';
 import 'dotenv/config';
+import { habileGuildId } from '$lib/constants';
 
 export default defineConfig({
   compiler: {
@@ -14,7 +15,7 @@ export default defineConfig({
     },
   },
   discord: {
-    commandGuilds: ['738747595438030888'],
+    commandGuilds: [habileGuildId],
     clientOptions: {
       allowedMentions: {
         repliedUser: false,
