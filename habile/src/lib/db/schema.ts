@@ -1,4 +1,5 @@
-import { jsonb, pgTable, text, integer, real, boolean } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { pgTable, text, integer, real, boolean, jsonb } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -13,10 +14,36 @@ export const users = pgTable('users', {
       content: string;
     }[]
   >(),
+  partyId: text('party_id').references(() => parties.id),
 });
 
-// export const habileChatData = pgTable('habile_chat_data', {
-//   tokens: real('tokens').notNull(),
-//   used: real('used').notNull(),
-//   messages: integer('messages').notNull(),
-// });
+export const usersRelations = relations(users, ({ one }) => ({
+  party: one(parties, {
+    fields: [users.partyId],
+    references: [parties.id],
+  }),
+}));
+
+export const parties = pgTable('parties', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  color: integer('color').notNull(),
+  joinType: text('join_type', {
+    enum: ['open', 'request', 'invite'],
+  }).notNull(),
+  leaderId: text('leader_id').notNull(),
+});
+
+export const partiesRelations = relations(parties, ({ one, many }) => ({
+  members: many(users, {
+    relationName: 'members',
+  }),
+  banned: many(users, {
+    relationName: 'banned',
+  }),
+  leader: one(users, {
+    fields: [parties.leaderId],
+    references: [users.id],
+    relationName: 'leader',
+  }),
+}));
