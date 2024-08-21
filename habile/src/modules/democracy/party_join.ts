@@ -26,93 +26,102 @@ export default ChatCommand({
     },
   }),
   async handle({ party: partyId }) {
-    await this.deferReply({
-      ephemeral: true,
-    });
-
-    const user = await getUser(this.user.id);
-
-    if (user && user.party) {
-      await this.editReply({
-        content: "you're already in a party! leave your current party with /party leave.",
+    try {
+      await this.deferReply({
+        ephemeral: true,
       });
-      return;
-    }
 
-    const party = await db.query.parties.findFirst({
-      where: ({ id }, { eq }) => eq(id, partyId),
-    });
+      const user = await getUser(this.user.id);
 
-    if (!party) {
-      await this.editReply({
-        content: 'party not found!',
-      });
-      return;
-    }
-
-    if (party.joinType === 'invite') {
-      await this.editReply({
-        content: 'you need an invite to join this party!',
-      });
-      return;
-    }
-
-    const leaderUser = await this.client.users.fetch(party.leaderId);
-
-    if (party.joinType === 'request') {
-      if (leaderUser) {
-        await leaderUser.send({
-          content: `<@${this.user.id}> (${this.user.username}) has requested to join your party.`,
-          components: components(
-            row(
-              new AcceptJoinButton(this.user.id).setStyle('SUCCESS').setLabel('accept'),
-              new RejectJoinButton(this.user.id).setStyle('DANGER').setLabel('reject'),
-            ),
-          ),
+      if (user && user.party) {
+        await this.editReply({
+          content: "you're already in a party! leave your current party with /party leave.",
         });
+        return;
       }
 
-      await this.editReply({
-        content: dedent`
+      const party = await db.query.parties.findFirst({
+        where: ({ id }, { eq }) => eq(id, partyId),
+      });
+
+      if (!party) {
+        await this.editReply({
+          content: 'party not found!',
+        });
+        return;
+      }
+
+      if (party.joinType === 'invite') {
+        await this.editReply({
+          content: 'you need an invite to join this party!',
+        });
+        return;
+      }
+
+      const leaderUser = await this.client.users.fetch(party.leaderId);
+
+      if (party.joinType === 'request') {
+        if (leaderUser) {
+          await leaderUser
+            .send({
+              content: `<@${this.user.id}> (${this.user.username}) has requested to join your party.`,
+              components: components(
+                row(
+                  new AcceptJoinButton(this.user.id).setStyle('SUCCESS').setLabel('accept'),
+                  new RejectJoinButton(this.user.id).setStyle('DANGER').setLabel('reject'),
+                ),
+              ),
+            })
+            .catch(() => {});
+        }
+
+        await this.editReply({
+          content: dedent`
         you\`ve sent a request to join **${party.name}**!
         the leader of the party will have to accept your request for you to join it.
         `,
-      });
-      return;
-    }
-
-    if (party.joinType === 'open') {
-      await db
-        .insert(users)
-        .values({
-          id: this.user.id,
-          partyId: partyId,
-        })
-        .onConflictDoUpdate({
-          set: {
-            partyId: partyId,
-          },
-          where: eq(users.id, this.user.id),
-          target: users.id,
         });
-
-      if (leaderUser) {
-        await leaderUser.send({
-          content: `<@${this.user.id}> (${this.user.username}) has joined your party.`,
-        });
+        return;
       }
 
-      const member = this.member as GuildMember;
-      const partyRole = (await this.guild.roles.fetch()).find((r) => r.name === party.id);
+      if (party.joinType === 'open') {
+        await db
+          .insert(users)
+          .values({
+            id: this.user.id,
+            partyId: partyId,
+          })
+          .onConflictDoUpdate({
+            set: {
+              partyId: partyId,
+            },
+            where: eq(users.id, this.user.id),
+            target: users.id,
+          });
 
-      member.roles.add(partyRole);
+        if (leaderUser) {
+          await leaderUser
+            .send({
+              content: `<@${this.user.id}> (${this.user.username}) has joined your party.`,
+            })
 
-      await this.editReply({
-        content: dedent`
-          ${emojis.habileHappy} you are now part of the **${party.name}**!
-          you can leave it at any moment using \`/party leave\`.
+            .catch(() => {});
+        }
+
+        const member = this.member as GuildMember;
+        const partyRole = (await this.guild.roles.fetch()).find((r) => r.name === party.id);
+
+        member.roles.add(partyRole);
+
+        await this.editReply({
+          content: dedent`
+        # ${emojis.habileHappy} you joined the **${party.name}**!
+        you can leave it at any moment using \`/party leave\`.
         `,
-      });
+        });
+      }
+    } catch (e) {
+      console.error(e);
     }
   },
 });
@@ -126,7 +135,7 @@ export const AcceptJoinButton = ButtonComponent({
 
       if (askingUser?.party) {
         await this.editReply({
-          content: `${emojis.habileScared} **yikes!** this user entered a party in the meantime!`,
+          content: `${emojis.habileScared} **yikes!** this user joined another party in the meantime!`,
           components: [],
         });
         return;
@@ -154,9 +163,11 @@ export const AcceptJoinButton = ButtonComponent({
 
       member.roles.add(partyRole);
 
-      member.user.send({
-        content: `you have been accepted into the party **${leader.party.name}**!`,
-      });
+      member.user
+        .send({
+          content: `you have been accepted into the party **${leader.party.name}**!`,
+        })
+        .catch(() => {});
 
       await this.editReply({
         content: `${emojis.habileHappy} <@${member.user.id}> (${member.user.username}) is now part of the party!`,
@@ -185,9 +196,11 @@ export const RejectJoinButton = ButtonComponent({
     const askingUser = await this.client.users.fetch(userId);
     const leader = await getUser(this.user.id);
 
-    askingUser.send({
-      content: `your request to join the party **${leader.party.name}** has been rejected.`,
-    });
+    askingUser
+      .send({
+        content: `your request to join the party **${leader.party.name}** has been rejected.`,
+      })
+      .catch(() => {});
 
     await this.editReply({
       content: `<@${userId}> (${askingUser.username}) has been rejected from the party.`,

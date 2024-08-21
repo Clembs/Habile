@@ -34,7 +34,7 @@ export default ChatCommand({
       content: `are you SURE that you want to leave your current party, ${user.party.name}?`,
       components: components(
         row(
-          new CancelLeaveButton().setStyle('SECONDARY').setLabel('no.'),
+          new GenericCancelButton().setStyle('SECONDARY').setLabel('no.'),
           new ConfirmLeaveButton(user.party.id).setStyle('DANGER').setLabel('yes.'),
         ),
       ),
@@ -65,9 +65,11 @@ export const ConfirmLeaveButton = ButtonComponent({
     const leaderUser = await this.client.users.fetch(oldParty.leaderId);
 
     if (leaderUser) {
-      await leaderUser.send({
-        content: `<@${this.user.id}> (${this.user.username}) has left your party.`,
-      });
+      await leaderUser
+        .send({
+          content: `<@${this.user.id}> (${this.user.username}) has left your party.`,
+        })
+        .catch(() => {});
     }
 
     await this.editReply({
@@ -77,7 +79,7 @@ export const ConfirmLeaveButton = ButtonComponent({
   },
 });
 
-export const CancelLeaveButton = ButtonComponent({
+export const GenericCancelButton = ButtonComponent({
   async handle() {
     await this.update({
       content: '*cancelled.*',
