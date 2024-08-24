@@ -19,7 +19,14 @@ export default ChatCommand({
 
     if (user.party.leaderId !== this.user.id) {
       await this.editReply({
-        content: 'you must be the leader of your party to invite someone!',
+        content: 'you must be the leader of your party to ban someone!',
+      });
+      return;
+    }
+
+    if (user.id === targetUser.id) {
+      await this.editReply({
+        content: 'you cannot ban yourself from your party!!',
       });
       return;
     }

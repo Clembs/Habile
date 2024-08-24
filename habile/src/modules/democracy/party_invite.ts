@@ -24,6 +24,13 @@ export default ChatCommand({
       return;
     }
 
+    if (user.id === invitedUser.id) {
+      await this.editReply({
+        content: `did you try to invite yourself to your party? ${emojis.habileNeutral}`,
+      });
+      return;
+    }
+
     if (user.party.members.find(({ id }) => id === invitedUser.id)) {
       await this.editReply({
         content: 'this user is already in your party!',
