@@ -44,6 +44,11 @@ export default ChatCommand({
           partyId: null,
         })
         .where(eq(users.id, targetUser.id));
+
+      const member = await this.guild.members.fetch(targetUser.id);
+      const partyRole = this.guild.roles.cache.find(({ id }) => id === user.partyId);
+
+      member.roles.remove(partyRole);
     }
 
     await this.editReply({
