@@ -48,7 +48,7 @@ export default ChatCommand({
             .join('\n'),
 
         fields:
-          party && leaderId === this.user.id
+          party && leaderId === this.user.id && banned.length
             ? [
                 {
                   name: 'banned members',
