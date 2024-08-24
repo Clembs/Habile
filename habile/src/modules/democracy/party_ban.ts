@@ -1,8 +1,7 @@
 import { db } from '$lib/db';
-import { partyBanned, users } from '$lib/db/schema';
-import { getUser } from '$lib/db/utils';
+import { partyBanned } from '$lib/db/schema';
+import { getUser, removeMemberFromParty } from '$lib/db/utils';
 import dedent from 'dedent';
-import { eq } from 'drizzle-orm';
 import { ChatCommand, OptionBuilder } from 'purplet';
 
 export default ChatCommand({
@@ -38,17 +37,9 @@ export default ChatCommand({
     });
 
     if (user.party.members.find(({ id }) => id === targetUser.id)) {
-      await db
-        .update(users)
-        .set({
-          partyId: null,
-        })
-        .where(eq(users.id, targetUser.id));
-
       const member = await this.guild.members.fetch(targetUser.id);
-      const partyRole = this.guild.roles.cache.find(({ id }) => id === user.partyId);
 
-      member.roles.remove(partyRole);
+      await removeMemberFromParty(member, user.partyId);
     }
 
     await this.editReply({
