@@ -1,5 +1,7 @@
 export const habileGuildId = '738747595438030888';
 
+export const partyLeaderRoleId = '1267117213031071764';
+
 export const freeTalkingChannels = [
   '1204164230320754868', // #chat-with-habile
 ];

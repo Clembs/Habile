@@ -1,5 +1,5 @@
 import { ButtonComponent, ChatCommand, components, OptionBuilder, row } from 'purplet';
-import { colorRoles, emojis } from '../../lib/constants';
+import { colorRoles, emojis, partyLeaderRoleId } from '../../lib/constants';
 import { getUser } from '../../lib/db/utils';
 import dedent from 'dedent';
 import { db } from '$lib/db';
@@ -164,6 +164,7 @@ export const ConfirmCreateButton = ButtonComponent({
     const member = this.member as GuildMember;
 
     member.roles.add(role);
+    member.roles.add(partyLeaderRoleId);
 
     await this.editReply({
       content:
