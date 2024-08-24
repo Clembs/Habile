@@ -17,14 +17,14 @@ const JoinTypes = {
 
 export default ChatCommand({
   name: 'party create',
-  description: 'Create and register a party.',
+  description: 'create and register a party.',
   options: new OptionBuilder()
-    .string('name', "The new party's name. Should include 'Party' at the end.", {
+    .string('name', "the new party's name, should include 'Party' at the end", {
       maxLength: 48,
       minLength: 3,
       required: true,
     })
-    .string('color', "The party's color, in hexadecimal format (or one of the suggestions)", {
+    .string('color', "the party's color, in hexadecimal format (or one of the suggestions)", {
       required: true,
       async autocomplete({ color }) {
         const list = colorRoles
