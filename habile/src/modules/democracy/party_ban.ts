@@ -7,7 +7,7 @@ import { ChatCommand, OptionBuilder } from 'purplet';
 export default ChatCommand({
   name: 'party ban',
   description: 'ban a user from entering your party.',
-  options: new OptionBuilder().user('user', 'the user to kick.', {
+  options: new OptionBuilder().user('user', 'the user to ban', {
     required: true,
   }),
   async handle({ user: targetUser }) {
