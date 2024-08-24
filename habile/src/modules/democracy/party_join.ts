@@ -1,10 +1,8 @@
 import { emojis, habileGuildId } from '$lib/constants';
 import { db } from '$lib/db';
-import { users } from '$lib/db/schema';
-import { getUser } from '$lib/db/utils';
+import { addMemberToParty, getUser } from '$lib/db/utils';
 import dedent from 'dedent';
 import { GuildMember } from 'discord.js';
-import { eq } from 'drizzle-orm';
 import { ButtonComponent, ChatCommand, components, OptionBuilder, row } from 'purplet';
 
 export default ChatCommand({
@@ -104,19 +102,9 @@ export default ChatCommand({
       }
 
       if (party.joinType === 'open') {
-        await db
-          .insert(users)
-          .values({
-            id: this.user.id,
-            partyId: partyId,
-          })
-          .onConflictDoUpdate({
-            set: {
-              partyId: partyId,
-            },
-            where: eq(users.id, this.user.id),
-            target: users.id,
-          });
+        const member = this.member as GuildMember;
+
+        await addMemberToParty(member, partyId);
 
         if (leaderUser) {
           await leaderUser
@@ -126,11 +114,6 @@ export default ChatCommand({
 
             .catch(() => {});
         }
-
-        const member = this.member as GuildMember;
-        const partyRole = (await this.guild.roles.fetch()).find((r) => r.name === party.id);
-
-        member.roles.add(partyRole);
 
         await this.editReply({
           content: dedent`
@@ -162,25 +145,10 @@ export const AcceptJoinButton = ButtonComponent({
 
       const leader = await getUser(this.user.id);
 
-      await db
-        .insert(users)
-        .values({
-          id: userId,
-          partyId: leader.party.id,
-        })
-        .onConflictDoUpdate({
-          set: {
-            partyId: leader.party.id,
-          },
-          where: eq(users.id, userId),
-          target: users.id,
-        });
-
       const guild = await this.client.guilds.fetch(habileGuildId);
       const member = await guild.members.fetch(userId);
-      const partyRole = (await guild.roles.fetch()).find((r) => r.name === leader.party.id);
 
-      member.roles.add(partyRole);
+      await addMemberToParty(member, leader.partyId);
 
       member.user
         .send({
@@ -201,16 +169,6 @@ export const AcceptJoinButton = ButtonComponent({
 export const RejectJoinButton = ButtonComponent({
   async handle(userId: string) {
     await this.deferUpdate();
-
-    const askingUserData = await getUser(userId);
-
-    if (askingUserData?.party) {
-      await this.editReply({
-        content: `${emojis.habileScared} **yikes!** this user entered a party in the meantime!`,
-        components: [],
-      });
-      return;
-    }
 
     const askingUser = await this.client.users.fetch(userId);
     const leader = await getUser(this.user.id);

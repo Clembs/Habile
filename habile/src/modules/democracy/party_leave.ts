@@ -1,8 +1,6 @@
 import { db } from '$lib/db';
-import { users } from '$lib/db/schema';
-import { getUser } from '$lib/db/utils';
+import { getUser, removeMemberFromParty } from '$lib/db/utils';
 import { GuildMember } from 'discord.js';
-import { eq } from 'drizzle-orm';
 import { ButtonComponent, ChatCommand, components, row } from 'purplet';
 
 export default ChatCommand({
@@ -46,21 +44,12 @@ export const ConfirmLeaveButton = ButtonComponent({
   async handle(partyId: string) {
     await this.deferUpdate();
 
-    await db
-      .update(users)
-      .set({
-        partyId: null,
-      })
-      .where(eq(users.id, this.user.id));
+    const member = this.member as GuildMember;
+    await removeMemberFromParty(member, partyId);
 
     const oldParty = await db.query.parties.findFirst({
       where: ({ id }, { eq }) => eq(id, partyId),
     });
-
-    const member = this.member as GuildMember;
-    const partyRole = (await this.guild.roles.fetch()).find((r) => r.name === partyId);
-
-    member.roles.remove(partyRole);
 
     const leaderUser = await this.client.users.fetch(oldParty.leaderId);
 
