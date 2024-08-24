@@ -42,11 +42,21 @@ export default ChatCommand({
 
       const party = await db.query.parties.findFirst({
         where: ({ id }, { eq }) => eq(id, partyId),
+        with: {
+          banned: true,
+        },
       });
 
       if (!party) {
         await this.editReply({
           content: 'party not found!',
+        });
+        return;
+      }
+
+      if (party.banned.find(({ userId }) => userId === this.user.id)) {
+        await this.editReply({
+          content: 'you are banned from this party.',
         });
         return;
       }
@@ -62,8 +72,8 @@ export default ChatCommand({
 
       if (party.joinType === 'request') {
         if (leaderUser) {
-          await leaderUser
-            .send({
+          try {
+            await leaderUser.send({
               content: `<@${this.user.id}> (${this.user.username}) has requested to join your party.`,
               components: components(
                 row(
@@ -71,8 +81,17 @@ export default ChatCommand({
                   new RejectJoinButton(this.user.id).setStyle('DANGER').setLabel('reject'),
                 ),
               ),
-            })
-            .catch(() => {});
+            });
+          } catch (e) {
+            await this.editReply({
+              content: dedent`
+                ${emojis.habileScared} couldn't DM to the party leader!
+                this might be due to their privacy settings...
+                you should ask <@${party.leaderId}> directly to \`/party invite\` you to their party!
+                `,
+            });
+            return;
+          }
         }
 
         await this.editReply({
