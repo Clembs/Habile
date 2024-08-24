@@ -18,12 +18,13 @@ export default ChatCommand({
     },
   }),
   async handle({ party }) {
-    await this.deferReply();
+    await this.deferReply({ ephemeral: true });
 
     const parties = await db.query.parties.findMany({
       ...(party ? { where: ({ id }, { eq }) => eq(id, party) } : {}),
       with: {
         members: true,
+        ...(party ? { banned: true } : {}),
       },
       orderBy: ({ name }, { asc }) => asc(name),
     });
@@ -37,7 +38,7 @@ export default ChatCommand({
     }
 
     await this.editReply({
-      embeds: parties.map(({ id, name, leaderId, members, color }) => ({
+      embeds: parties.map(({ id, name, leaderId, members, banned, color }) => ({
         title: `${name} (${id})`,
         description:
           `${members.length} members\n` +
@@ -45,6 +46,16 @@ export default ChatCommand({
             .sort((a, b) => (a.id === leaderId ? -1 : b.id === leaderId ? 1 : 0))
             .map(({ id }) => `<@${id}>` + (id === leaderId ? ` (Leader)` : ''))
             .join('\n'),
+
+        fields:
+          party && leaderId === this.user.id
+            ? [
+                {
+                  name: 'banned members',
+                  value: banned.map(({ userId }) => `<@${userId}>`).join('\n'),
+                },
+              ]
+            : [],
         color,
       })),
     });
