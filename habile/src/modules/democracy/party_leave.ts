@@ -7,7 +7,7 @@ import { ButtonComponent, ChatCommand, components, row } from 'purplet';
 
 export default ChatCommand({
   name: 'party leave',
-  description: 'Leave your current party.',
+  description: 'leave your current party.',
   async handle() {
     await this.deferReply({
       ephemeral: true,

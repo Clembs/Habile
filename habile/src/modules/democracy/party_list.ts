@@ -3,7 +3,7 @@ import { ChatCommand, OptionBuilder } from 'purplet';
 
 export default ChatCommand({
   name: 'party list',
-  description: 'list all parties and their members',
+  description: 'list all parties and their members.',
   options: new OptionBuilder().string('party', 'a party whose members to list (optional)', {
     async autocomplete({ party }) {
       const list = await db.query.parties.findMany({

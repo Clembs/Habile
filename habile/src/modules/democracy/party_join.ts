@@ -10,7 +10,7 @@ import { ButtonComponent, ChatCommand, components, OptionBuilder, row } from 'pu
 export default ChatCommand({
   name: 'party join',
   description: 'join a party.',
-  options: new OptionBuilder().string('party', 'The party you want to join.', {
+  options: new OptionBuilder().string('party', 'the party to join', {
     required: true,
     async autocomplete({ party }) {
       const list = await db.query.parties.findMany({

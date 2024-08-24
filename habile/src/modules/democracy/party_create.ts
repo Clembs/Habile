@@ -121,7 +121,7 @@ export default ChatCommand({
           title: `${name} (\`${id}\`)`,
           description: dedent`
           Security: ${JoinTypes[joinType]}
-          Leader: @<${this.user.id}>
+          Leader: <@${this.user.id}>
           Members: 1
           `,
           color: decimalColor,
