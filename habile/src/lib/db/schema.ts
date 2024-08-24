@@ -54,9 +54,9 @@ export const partyBanned = pgTable(
     userId: text('user_id').references(() => users.id),
     partyId: text('party_id').references(() => parties.id),
   },
-  ({ userId }) => ({
+  ({ userId, partyId }) => ({
     id: primaryKey({
-      columns: [userId],
+      columns: [userId, partyId],
     }),
   }),
 );
