@@ -1,6 +1,6 @@
 import { ButtonComponent, ChatCommand, components, OptionBuilder, row } from 'purplet';
 import { colorRoles, emojis, partyLeaderRoleId } from '../../lib/constants';
-import { getUser } from '../../lib/db/utils';
+import { addMemberToParty, getUser } from '../../lib/db/utils';
 import dedent from 'dedent';
 import { db } from '$lib/db';
 import { parties } from '$lib/db/schema';
@@ -69,16 +69,18 @@ export default ChatCommand({
 
     if (!id) {
       id =
-        name.split(' ').length > 1
+        name.replace(/party/i, '').trim().split(' ').length > 1
           ? // If the name has multiple words, get each first letter of each word
             name
+              .replace(/party/i, '')
+              .trim()
               .split(' ')
               .map((w) => w.charAt(0))
               .slice(0, 10)
               .join('')
               .toUpperCase()
           : // Otherwise, just uppercase the first 10 letters
-            name.slice(0, 10).toUpperCase();
+            name.replace(/party/i, '').trim().slice(0, 10).toUpperCase();
     }
 
     const partyWithSameId = await db.query.parties.findFirst({
@@ -143,6 +145,13 @@ export const ConfirmCreateButton = ButtonComponent({
 
     const { color, id, name, joinType, leaderId } = pendingPartiesMap.get(this.message.id);
 
+    // get the party whose ID is right before the new one, to position the role correctly
+    const preceedingParty = await db.query.parties.findFirst({
+      orderBy: ({ id }, { desc }) => desc(id),
+      where: ({ id: dbId }, { lt }) => lt(dbId, id),
+    });
+    const preceedingPartyRole = this.guild.roles.cache.find(({ id }) => id === preceedingParty.id);
+
     const [newParty] = await db
       .insert(parties)
       .values({
@@ -156,15 +165,17 @@ export const ConfirmCreateButton = ButtonComponent({
 
     const role = await this.guild.roles.create({
       color,
-      name,
+      name: id,
       reason: 'Party creation',
       hoist: true,
+      position: preceedingPartyRole ? preceedingPartyRole.position + 1 : 0,
     });
 
     const member = this.member as GuildMember;
 
-    member.roles.add(role);
     member.roles.add(partyLeaderRoleId);
+
+    await addMemberToParty(member, newParty.id);
 
     await this.editReply({
       content:
