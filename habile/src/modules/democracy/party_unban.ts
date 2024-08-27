@@ -18,6 +18,13 @@ export default ChatCommand({
 
     const user = await getUser(this.user.id);
 
+    if (!user?.party) {
+      await this.editReply({
+        content: 'you must be in a party to unban someone!',
+      });
+      return;
+    }
+
     if (user.party.leaderId !== this.user.id) {
       await this.editReply({
         content: 'you must be the leader of your party to unban someone!',
@@ -25,7 +32,7 @@ export default ChatCommand({
       return;
     }
 
-    if (user.id === targetUser.id) {
+    if (this.user.id === targetUser.id) {
       await this.editReply({
         content: 'what',
       });

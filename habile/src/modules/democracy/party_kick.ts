@@ -13,6 +13,13 @@ export default ChatCommand({
 
     const user = await getUser(this.user.id);
 
+    if (!user?.party) {
+      await this.editReply({
+        content: 'you must be in a party to kick someone!',
+      });
+      return;
+    }
+
     if (user.party.leaderId !== this.user.id) {
       await this.editReply({
         content: 'you must be the leader of your party to kick someone!',
