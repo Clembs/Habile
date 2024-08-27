@@ -72,6 +72,7 @@ export const GenericCancelButton = ButtonComponent({
   async handle() {
     await this.update({
       content: '*cancelled.*',
+      embeds: [],
       components: [],
     });
   },
